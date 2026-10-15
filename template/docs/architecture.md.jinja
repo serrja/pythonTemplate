@@ -1,0 +1,11 @@
+# {{ projectName }} architecture
+
+This starting note names the generated boundaries; replace it with the actual design when the project gains behavior.
+
+## 🧭 Components
+
+{% if profile == 'cli' %}The Typer entrypoint parses CLI input. Keep decisions in application code and external effects in adapters when they are introduced.{% elif profile == 'library' %}The package exposes only explicitly documented public symbols. Its users should not depend on private modules.{% elif profile == 'service' %}FastAPI composes the ASGI app. Add API routes, settings, persistence, and integration adapters only as their contracts become concrete.{% else %}C++20 owns native behavior; pybind11 `_core` adapts it to a Python-facing package. Do not expose `_core` as the documented API.{% endif %}
+
+## 🔒 Data and operations
+
+No credentials, domain data, deployment target, or business behavior is supplied. Record concrete trust and failure boundaries in `PROJECT.md`{% if profile == 'service' %} and `SERVICE.md`{% endif %} when they exist.

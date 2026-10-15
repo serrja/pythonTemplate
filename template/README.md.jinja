@@ -1,0 +1,34 @@
+# {{ projectName }}
+
+{% if profile == 'cli' %}A typed Python command-line starting point. Add commands when the project's task is defined.{% elif profile == 'library' %}A typed Python library starting point. Define its public API before publishing.{% elif profile == 'service' %}A minimal FastAPI service foundation with only a health endpoint and no product API.{% else %}A C++20 extension foundation with a private pybind11 module and Python package.{% endif %}
+
+## 🚀 Quick start
+
+Requires Python 3.12+ and `uv`.{% if profile == 'native' %} Also requires a C++20 compiler and CMake.{% endif %} Generate and commit `uv.lock` before running locked commands.
+
+```bash
+uv lock
+uv sync --locked
+{% if profile == 'cli' %}uv run {{ projectName }} --help{% elif profile == 'service' %}uv run uvicorn {{ packageName }}.app:app --host 127.0.0.1 --port 8000{% elif profile == 'native' %}uv run python -c 'import {{ packageName }}; print({{ packageName }}.__name__)'{% else %}uv run python -c 'import {{ packageName }}; print({{ packageName }}.__name__)'{% endif %}
+```
+
+## 🧭 Architecture
+
+`src/{{ packageName }}` owns the Python package.{% if profile == 'service' %} `app.py` composes the HTTP application; add external adapters around real requirements.{% elif profile == 'native' %} `native/` owns C++ behavior and `_core` stays private; the Python package is the public interface.{% endif %} Record project-specific decisions in [PROJECT.md](PROJECT.md){% if profile == 'service' %} and [SERVICE.md](SERVICE.md){% endif %}.
+
+## 🛠 Development
+
+```bash
+uv run ruff check .
+uv run ruff format --check .
+uv run mypy
+uv build
+```
+
+## 🧪 Testing
+
+No subject tests are included yet. `uv run pytest` returns exit code 5 until tests are added; CI marks this stage `NOT_CONFIGURED`. Add tests for real behavior before claiming coverage.
+
+## 📚 Documentation
+
+The [architecture note](docs/architecture.md) records boundaries. The `AGENTS.md` file describes repository work rules. `PROJECT.md`{% if profile == 'service' %} and `SERVICE.md`{% endif %} are project-owned and survive template updates.

@@ -1,0 +1,13 @@
+"""ASGI composition root for {{ projectName }}."""
+
+from __future__ import annotations
+
+from fastapi import FastAPI
+
+app = FastAPI(title="{{ projectName }}")
+
+
+@app.get("/health", include_in_schema=False)
+def health() -> dict[str, str]:
+    """Report that the process can answer a request."""
+    return {"status": "ok"}
