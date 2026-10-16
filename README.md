@@ -1,22 +1,23 @@
 # projectTemplates
 
-Generic Copier scaffolds for a Python CLI, library, independent web service, or native extension. The template has one shared base and small profile-specific files; it contains no Pokerlost SDK, domain entities, credentials, or post-generation hooks.
+The logical `pythonTemplate` is a generic Copier source for Python CLI and library projects. Its existing `serrja/projectTemplates` Git history and remote remain unchanged. The old `service` and `native` profiles remain renderable for compatibility; new FastAPI projects use the separate `fastApiTemplate` derivative. No Pokerlost SDK, credentials, or hooks are included.
 
 ## 🚀 Generate
 
 Requires Python 3.12+, `uv`, and Copier 9.17.2. Choose a short camelCase project name; its import package and CLI keep that spelling, while the distribution name is lowercase for package metadata.
 
 ```bash
-uvx --from 'copier==9.17.2' copier copy . /tmp/notesCli -d projectName=notesCli -d profile=cli
-cd /tmp/notesCli
+destination="$(mktemp -d)"
+uvx --from 'copier==9.17.2' copier copy . "$destination" -d projectName=notesCli -d profile=cli
+cd "$destination"
 uv lock
 uv sync --locked
 uv run notesCli --help
 ```
 
-Profiles are `cli`, `library`, `service`, and `native`. New names follow camelCase; existing API names are never renamed by this template.
+The recommended profiles here are `cli` and `library`. The `service` and `native` choices reproduce older projects; do not silently migrate an existing application by re-rendering it as a new profile. The [migration note](docs/serviceDesign.md) describes the handoff. New names follow the [naming policy](docs/naming.md).
 
-The `service` profile starts without a database. Add `-d withPersistence=true` to render optional PostgreSQL connection, readiness, and Alembic wiring. See the [service design](docs/serviceDesign.md); no domain schema or credentials are generated.
+The legacy `service` profile starts without a database. Add `-d withPersistence=true` only for an existing legacy workflow; new web foundations use `fastApiTemplate`. `withTesting=false` and `withCi=false` omit those capabilities from a specialized render.
 
 ## 🧭 Ownership
 
@@ -24,6 +25,6 @@ The shared template owns packaging, quality configuration, CI, and the initial d
 
 ## 🛠 Development
 
-Run `uvx --from 'copier==9.17.2' copier update --help` in a generated Git project to see the update interface. Record a template Git tag or commit in `.copier-answers.yml` when generating from a committed source. The initial local version is `0.1.0`; use Git tags for releases after publication.
+From a clean generated Git checkout, use `uvx --from 'copier==9.17.2' copier update --defaults --vcs-ref=<reviewed-template-ref>` and inspect Git conflicts and deletions before accepting the result. Copier writes its own source/ref in `.copier-answers.yml`; do not edit that file to simulate an update. Historical and controlled future updates were verified with real local Git refs in disposable repositories. The source stamp declares unreleased worktree version `0.1.0.dev0` and answers schema 1; use reviewed Git tags for releases after authorization.
 
-The [documentation guide](docs/documentation.md) gives writing rules. [Contributing](docs/contributing.md) and the [release policy](docs/releaseGuide.md) own the shared process; the [verification guide](docs/verification.md) records profile checks and known limits.
+The [documentation guide](docs/documentation.md), [contribution guide](docs/contributing.md), [naming policy](docs/naming.md), [versioning policy](docs/versioning.md), and [release procedure](docs/releaseGuide.md) each own one topic. The [composition ADR](docs/adr/templateComposition.md) defines pinned derivative sources; the [verification guide](docs/verification.md) records actual checks and limits.

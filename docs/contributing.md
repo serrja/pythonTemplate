@@ -2,6 +2,8 @@
 
 This is the canonical process for the generic template. Generated projects receive a concise local `CONTRIBUTING.md` with their actual commands.
 
+Read the [naming policy](naming.md), [versioning policy](versioning.md), and [release procedure](releaseGuide.md) for shared rules. The [composition ADR](adr/templateComposition.md) identifies the owner of derived source files.
+
 ## 🔀 Branch and review
 
 Start a short branch from the repository's actual default branch: `feat/addHealthCheck`, `fix/preserveSettings`, `docs/releaseGuide`, or another `type/shortCamelCaseIntent`. Existing default branches are not renamed for style. Keep behavior, rename, dependency updates, and cleanup in separate reviews when their risk differs.
