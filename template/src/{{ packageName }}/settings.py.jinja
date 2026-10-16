@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-{% if withPersistence %}from pydantic import Field, SecretStr, field_validator
+{% if withPersistence | default(false) %}from pydantic import Field, SecretStr, field_validator
 {% endif %}from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -15,7 +15,7 @@ class ServiceSettings(BaseSettings):
         env_prefix="{{ projectName | upper }}_", extra="ignore", validate_default=True
     )
 
-    logLevel: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"{% if withPersistence %}
+    logLevel: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"{% if withPersistence | default(false) %}
     databaseUrl: SecretStr = Field(default=SecretStr(""), validation_alias="DATABASE_URL")
 
     @field_validator("databaseUrl")

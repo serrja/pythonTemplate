@@ -6,7 +6,7 @@ import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-{% if withPersistence %}from fastapi import FastAPI, HTTPException
+{% if withPersistence | default(false) %}from fastapi import FastAPI, HTTPException
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -22,7 +22,7 @@ async def lifespan(application: FastAPI) -> AsyncIterator[None]:
     """Own process resources for exactly one ASGI lifespan."""
     settings = ServiceSettings()
     logging.getLogger("{{ projectName }}").setLevel(settings.logLevel)
-{% if withPersistence %}    engine = createEngine(settings)
+{% if withPersistence | default(false) %}    engine = createEngine(settings)
     application.state.dbEngine = engine
     try:
         yield
@@ -43,7 +43,7 @@ def live() -> dict[str, str]:
 @app.get("/health/ready", include_in_schema=False)
 async def ready() -> dict[str, str]:
     """Check only dependencies actually enabled in this generated service."""
-{% if withPersistence %}    try:
+{% if withPersistence | default(false) %}    try:
         async with app.state.dbEngine.connect() as connection:
             await connection.execute(text("SELECT 1"))
     except SQLAlchemyError as exc:

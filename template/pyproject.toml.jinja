@@ -10,7 +10,7 @@ version = "0.1.0"
 description = "{{ projectName }} {{ profile }} foundation"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = [{% if profile == 'cli' %}"typer>=0.27,<1"{% elif profile == 'service' %}"fastapi>=0.119,<1", "uvicorn>=0.38,<1", "pydantic-settings>=2.12,<3"{% if withPersistence %}, "sqlalchemy[asyncio]>=2.0.44,<3", "asyncpg>=0.31,<1", "alembic>=1.17,<2"{% endif %}{% endif %}]
+dependencies = [{% if profile == 'cli' %}"typer>=0.27,<1"{% elif profile == 'service' %}"fastapi>=0.119,<1", "uvicorn>=0.38,<1", "pydantic-settings>=2.12,<3"{% if withPersistence | default(false) %}, "sqlalchemy[asyncio]>=2.0.44,<3", "asyncpg>=0.31,<1", "alembic>=1.17,<2"{% endif %}{% endif %}]
 
 {% if profile == 'cli' %}[project.scripts]
 {{ projectName }} = "{{ packageName }}.cli:app"

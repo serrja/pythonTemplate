@@ -14,7 +14,7 @@ uv sync --locked
 
 ## 🧭 Architecture
 
-`src/{{ packageName }}` owns the Python package.{% if profile == 'service' %} `app.py` composes the HTTP application and `settings.py` validates environment input. `/health/live` checks process response; `/health/ready` checks only enabled dependencies.{% if withPersistence %} This render requires `DATABASE_URL` at startup and includes async PostgreSQL/Alembic wiring, but no domain schema or migration revision.{% else %} This render has no required database or credentials.{% endif %} Add business adapters only around actual requirements.{% elif profile == 'native' %} `native/` owns C++ behavior and `_core` stays private; the Python package is the public interface.{% endif %} Record project-specific decisions in [PROJECT.md](PROJECT.md){% if profile == 'service' %} and [SERVICE.md](SERVICE.md){% endif %}.
+`src/{{ packageName }}` owns the Python package.{% if profile == 'service' %} `app.py` composes the HTTP application and `settings.py` validates environment input. `/health/live` checks process response; `/health/ready` checks only enabled dependencies.{% if withPersistence | default(false) %} This render requires `DATABASE_URL` at startup and includes async PostgreSQL/Alembic wiring, but no domain schema or migration revision.{% else %} This render has no required database or credentials.{% endif %} Add business adapters only around actual requirements.{% elif profile == 'native' %} `native/` owns C++ behavior and `_core` stays private; the Python package is the public interface.{% endif %} Record project-specific decisions in [PROJECT.md](PROJECT.md){% if profile == 'service' %} and [SERVICE.md](SERVICE.md){% endif %}.
 
 ## 🛠 Development
 
