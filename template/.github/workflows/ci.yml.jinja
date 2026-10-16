@@ -25,15 +25,16 @@ jobs:
       - run: uv python install 3.12
       - run: uv lock --check
       - run: uv sync --locked --python 3.12
-      - run: uv run ruff check .
-      - run: uv run ruff format --check .
-      - run: uv run mypy
+      - run: uv run --locked ruff check .
+      - run: uv run --locked ruff format --check .
+      - run: uv run --locked mypy
       - name: Existing tests
         if: hashFiles('tests/test_*.py', 'tests/**/test_*.py') != ''
-        run: uv run pytest
+        run: uv run --locked pytest
       - name: Test status
         if: hashFiles('tests/test_*.py', 'tests/**/test_*.py') == ''
         run: echo 'NOT_CONFIGURED: no tests yet'
       - run: uv build
 {% if profile == 'service' %}      - run: docker build --file Dockerfile --tag {{ packageName }}:ci .
+      - run: uv run --locked python -c 'from {{ packageName }}.app import app; print(app.title)'
 {% endif %}

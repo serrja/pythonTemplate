@@ -11,6 +11,10 @@ _exclude:
   - "{% if profile != 'cli' %}src/*/cli.py{% endif %}"
   - "{% if profile != 'cli' %}src/*/__main__.py{% endif %}"
   - "{% if profile != 'service' %}src/*/app.py{% endif %}"
+  - "{% if profile != 'service' %}src/*/settings.py{% endif %}"
+  - "{% if profile != 'service' or not withPersistence %}src/*/persistence.py{% endif %}"
+  - "{% if profile != 'service' or not withPersistence %}alembic.ini{% endif %}"
+  - "{% if profile != 'service' or not withPersistence %}migrations/**{% endif %}"
   - "{% if profile != 'service' %}Dockerfile{% endif %}"
   - "{% if profile != 'service' %}.dockerignore{% endif %}"
   - "{% if profile != 'service' %}SERVICE.md{% endif %}"
@@ -36,6 +40,12 @@ profile:
     - service
     - native
   help: "Project profile."
+
+withPersistence:
+  type: bool
+  default: false
+  when: "{{ profile == 'service' }}"
+  help: "Include optional async PostgreSQL connection and Alembic wiring."
 
 packageName:
   type: str
