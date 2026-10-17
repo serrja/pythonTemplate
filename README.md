@@ -4,7 +4,7 @@
 
 ## 🚀 Generate
 
-Requires Python 3.12+, `uv`, and Copier 9.17.2. Choose a short camelCase project name; its import package and CLI keep that spelling, while the distribution name is lowercase for package metadata.
+Requires Python 3.12+, `uv`, and Copier 9.17.2. The stable project answer and CLI can remain camelCase; new import packages are lowercase. Existing answers and published imports require a reviewed migration before renaming.
 
 ```bash
 destination="$(mktemp -d)"
