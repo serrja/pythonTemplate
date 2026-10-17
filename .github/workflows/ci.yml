@@ -65,7 +65,8 @@ jobs:
         run: uv run --locked python -c 'import importlib; print(importlib.import_module("example${{ matrix.variant }}".lower() + ".app").app.title)'
       - name: Test status for non-service profile
         if: matrix.profile != 'service'
-        run: echo 'NOT_APPLICABLE: no runtime behavior is generated for this profile'
+        run: |
+          echo 'NOT_APPLICABLE: no runtime behavior is generated for this profile'
       - name: Service image
         if: matrix.profile == 'service'
         working-directory: ${{ runner.temp }}/rendered
