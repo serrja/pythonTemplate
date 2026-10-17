@@ -4,7 +4,7 @@ This page owns compatibility and version rules for the two generic Copier source
 
 ## 📦 Independent identities
 
-`pythonTemplate` is the logical name of this repository while its current remote remains `serrja/projectTemplates`. `fastApiTemplate`, Pokerlost `serviceTemplate`, and each generated application have independent revisions. Copier answers, managed paths, minimum Copier/Python versions, and enabled capabilities are part of template compatibility. Record each parent by immutable content SHA-256 or published Git commit, plus the derivative version and answer schema. A parent update is reviewed and propagated; it is not an automatic downstream release.
+`pythonTemplate` is the logical and GitHub repository name; the former `serrja/projectTemplates` address identifies the same history through GitHub redirect. The rename did not change template content, Git commits, or version. `fastApiTemplate`, Pokerlost `serviceTemplate`, and each generated application have independent revisions. Copier answers, managed paths, minimum Copier/Python versions, and enabled capabilities are part of template compatibility. Record each parent by immutable content SHA-256 or published Git commit, plus the derivative version and answer schema. A parent update is reviewed and propagated; it is not an automatic downstream release.
 
 The SDK runtime package, SDK generator, and schema/manifest have separate versions. OpenAPI/wire compatibility is assessed separately from package version. Alembic revision IDs identify schema transitions, not application releases. Docker deployments select an immutable digest; Helm chart `version` and `appVersion` are distinct when a project actually uses Helm.
 

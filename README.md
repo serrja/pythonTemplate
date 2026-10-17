@@ -1,6 +1,6 @@
-# projectTemplates
+# pythonTemplate
 
-The logical `pythonTemplate` is a generic Copier source for Python CLI and library projects. Its existing `serrja/projectTemplates` Git history and remote remain unchanged. The old `service` and `native` profiles remain renderable for compatibility; new FastAPI projects use the separate `fastApiTemplate` derivative. No Pokerlost SDK, credentials, or hooks are included.
+`pythonTemplate` is a generic Copier source for Python CLI and library projects. The existing private repository was renamed from `serrja/projectTemplates` to `serrja/pythonTemplate` without changing its Git history. Its canonical Copier source is `git@github.com:serrja/pythonTemplate.git`. The old `service` and `native` profiles remain renderable for compatibility; new FastAPI projects use the separate `fastApiTemplate` derivative. No Pokerlost SDK, credentials, or hooks are included.
 
 ## 🚀 Generate
 
