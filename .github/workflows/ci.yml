@@ -24,8 +24,8 @@ jobs:
       - run: uv python install 3.12
       - name: Source quality and Copier regressions
         run: |
-          uv run --no-project --python 3.12 --with 'copier==9.17.2' --with 'pytest>=9,<10' --with 'ruff==0.16.4' --with 'mypy>=2.3,<3' ruff check --select B,E,F,I,N,RUF,UP tools tests
-          uv run --no-project --python 3.12 --with 'copier==9.17.2' --with 'pytest>=9,<10' --with 'ruff==0.16.4' --with 'mypy>=2.3,<3' ruff format --check tools tests
+          uv run --no-project --python 3.12 --with 'copier==9.17.2' --with 'pytest>=9,<10' --with 'ruff==0.16.4' --with 'mypy>=2.3,<3' ruff check --target-version py312 --select B,E,F,I,N,RUF,UP tools tests
+          uv run --no-project --python 3.12 --with 'copier==9.17.2' --with 'pytest>=9,<10' --with 'ruff==0.16.4' --with 'mypy>=2.3,<3' ruff format --target-version py312 --check tools tests
           uv run --no-project --python 3.12 --with 'copier==9.17.2' --with 'pytest>=9,<10' --with 'ruff==0.16.4' --with 'mypy>=2.3,<3' mypy --strict tools/compose_template.py
           uv run --no-project --python 3.12 --with 'copier==9.17.2' --with 'pytest>=9,<10' --with 'ruff==0.16.4' --with 'mypy>=2.3,<3' pytest -q tests
   template:
