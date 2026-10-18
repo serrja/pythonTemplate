@@ -37,3 +37,12 @@ Run `make check`, then render each supported profile and run its canonical gener
 **Expected:** It returns 200 only when the required dependency is reachable.
 
 **Reproduction:** State the package version, OS, whether persistence is enabled, and a disposable database setup. Include redacted logs and the exact command/result. Never attach `DATABASE_URL`, `.env`, VPN links, credentials, or a working database.
+
+## Metadata check
+
+The managed `Contribution` workflow validates new `type/shortCamelCaseIntent` branches and
+`type(scope): intent` PR titles using event metadata without checking out or executing PR code.
+An existing published branch with older spelling may be recorded exactly in the repository
+variable `LEGACY_PUBLISHED_BRANCH`; this does not authorize renaming it or accepting other
+new spellings. The Python base owns the workflow; consumers keep a reviewed full-SHA snapshot
+with `.github/engineering-source.json`. GitHub does not inherit workflows from defaults.
