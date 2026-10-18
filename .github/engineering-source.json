@@ -1,10 +1,10 @@
 {
   "repository": "https://github.com/serrja/pythonTemplate",
-  "revision": "e23fb44411b971f40a9432a8616ddaf7abf70f93",
+  "revision": null,
   "files": {
     ".github/PULL_REQUEST_TEMPLATE.md": {
       "source": "template/.github/PULL_REQUEST_TEMPLATE.md.jinja",
-      "sha256": "f41a3ecd7c649e4df6933771290f54f3c832188a4b806f1d6c0acbb979ab5bc5"
+      "sha256": "ace4038d79b02d6aacf779739ae7c9bd7179fbf9e57d5e2d1d14e08466858544"
     },
     ".github/ISSUE_TEMPLATE/bug.yml": {
       "source": "template/.github/ISSUE_TEMPLATE/bug.yml",
@@ -13,6 +13,22 @@
     ".github/ISSUE_TEMPLATE/feature.yml": {
       "source": "template/.github/ISSUE_TEMPLATE/feature.yml",
       "sha256": "0b80a1e2b30ffc501f321a38b0c60396f309eb73e8aeff0c3a45710009dd23bd"
+    },
+    "docker/quality.mk": {
+      "source": "template/docker/quality.mk",
+      "sha256": "01b2d3d630fdee262b29b4fbabbcda864507c1fe63edafb4e26171af7f6e8d0f"
+    },
+    "docker/quality-python.mk": {
+      "source": "template/docker/quality-python.mk",
+      "sha256": "65cc6b6a47ebead0dc56466f88fbc507d61556119f7c38de2ef61f6a6f449224"
+    },
+    "docker/coverage_report.py": {
+      "source": "template/docker/coverage_report.py",
+      "sha256": "8a401b7e6217a9b741307809f0bb6d6ec82241e6b6c8dadbe47bd2f27ae3b5c1"
+    },
+    ".github/workflows/contribution.yml": {
+      "source": "template/.github/workflows/contribution.yml",
+      "sha256": "5ffc172c7c0881ae18e7243ee718dcc2693922f4864cafd73ab895054e30d272"
     }
   },
   "rules": {
@@ -21,5 +37,6 @@
     "testing": "docs/testing.md",
     "versioning": "docs/versioning.md"
   },
-  "codeowners": "Project-specific assignment; not inherited from the template."
+  "codeowners": "Project-specific assignment; not inherited from the template.",
+  "role": "canonical source in this repository; content hashes identify managed files"
 }

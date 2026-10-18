@@ -29,6 +29,6 @@ From a clean generated Git checkout, use `uvx --from 'copier==9.17.2' copier upd
 
 The [documentation guide](docs/documentation.md), [contribution guide](docs/contributing.md), [testing guide](docs/testing.md), [naming policy](docs/naming.md), [versioning policy](docs/versioning.md), and [release procedure](docs/releaseGuide.md) each own one topic. The [composition ADR](docs/adr/templateComposition.md) defines pinned derivative sources; the [verification guide](docs/verification.md) records actual checks and limits.
 
-Install the locked maintenance environment with `make install`, then run `make check`. Generated projects provide the same thin Make interface for their applicable commands. Testing-enabled renders have foundation tests and a strict coverage gate; an empty library's import test is not a domain suite.
+Install the locked maintenance environment with `make install`, then run `make check`. Generated projects provide the same thin Make interface for their applicable commands. Testing-enabled renders have foundation tests and advisory coverage reports; an empty library's import test is not a domain suite.
 
 The existing standard-library [Markdown contract tool](tools/check_documentation.py) is maintained here as common engineering source. Legacy consumers keep byte-identical managed snapshots with a full owner commit and file checksum; fixes belong here first. This tooling is separate from the generated application runtime and Copier source identity.

@@ -1,3 +1,12 @@
+ifneq ($(CONTAINERIZED),1)
+QUALITY_IMAGE := pythontemplate:quality
+QUALITY_NETWORK := bridge
+QUALITY_EXTRA_TARGETS := test-integration
+IMAGE_COMMAND = printf "%s\n" "notApplicable: this repository owns template source"
+VERIFY_COMMAND = $(MAKE) render RENDER_OUTPUT="$(CURDIR)/.local/verified-render" RENDER_ARGS="-d projectName=verifyLibrary -d profile=library"
+BUILD_COMMAND = printf "%s\n" "notApplicable: maintenance source; run render verification for package artifacts"
+include docker/quality-python.mk
+else
 .DEFAULT_GOAL := help
 UV ?= uv
 
@@ -31,3 +40,5 @@ test-integration: ## Run real Copier render and update tests.
 
 check: lint typecheck test ## Run every mandatory maintenance gate.
 	$(UV) lock --check
+
+endif

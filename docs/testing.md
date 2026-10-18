@@ -5,13 +5,12 @@ The maintenance suite verifies composition, provenance, failure cleanup, real Co
 ## Run maintenance checks
 
 ```bash
-make install
+make help
 make check
-make test-unit
-make test-integration
+make coverage
 ```
 
-`uv.lock` owns the maintenance dependency versions. `make test` runs the whole suite with statement and branch measurement, a strict 100% gate, missing counts, and JSON/XML output under `coverage/`. The denominator includes all canonical executable tooling under `tools/`, including modules that were never imported. Tests, Jinja, vendored snapshots, and generated output are not Python tooling coverage.
+`uv.lock` owns the maintenance dependency versions. `make test` runs the whole suite with statement and branch measurement, advisory coverage, missing counts, and JSON/XML output under `coverage/`. The denominator includes all canonical executable tooling under `tools/`, including modules that were never imported. Tests, Jinja, vendored snapshots, and generated output are not Python tooling coverage.
 
 The suite uses temporary directories and real local Git refs for Copier update tests. It verifies source identity, owned-file preservation, overlap conflicts, rejected snapshot edits, and failed subprocess propagation. It never changes a source repository's refs or working data. `tools/test_composition.py` is the canonical shared composition suite; explicit parent refresh propagates it alongside the composition tool, with the same provenance and local-edit protection. Derivatives run that managed suite against their own pinned tool rather than maintaining independent copies.
 
@@ -38,4 +37,35 @@ Use an async HTTPX client and explicit lifespan only when the assertion must awa
 
 ## Interpret failures
 
-`fail_under = 100` rejects every result below 100, regardless of display rounding. No tests collected, a missing mandatory dependency, cancellation, or a skipped required job is not success. Report statement/branch totals and missing counts. For a denominator with no branches, report branch coverage as N/A. Native C++ and client languages require their own tools; Python coverage does not measure them.
+Coverage below 100% produces a warning and exit 0 when tests and required checks pass. `fail_under = 0` removes only the numerical gate. Missing, corrupt or stale required reports remain errors. No tests collected, a missing mandatory dependency, cancellation, or a skipped required job is not success. Report statement/branch totals and missing counts. For a denominator with no branches, report branch coverage as notApplicable; absent instrumentation is notMeasured. Native C++ and client languages require their own tools; Python coverage does not measure them.
+
+## Docker command contract
+
+Git, Make and Docker suffice for the standard path. `make help` is read-only and offline.
+`make install` prepares the locked quality image. `lint` and `typecheck` run native tools in it;
+`test` executes the suite once, then validates JSON counters and emits advisory warnings.
+`check` runs lint, types and that same suite. `coverage` reads the existing result, checks the
+recorded quality image identity and run-start marker, and never reruns tests. Source, test,
+lock or recipe changes invalidate the evidence. A missing/stale result says to run `make test`.
+`build` exports applicable distributions through the cached builder; `image` creates a local
+runtime candidate and `verify` runs the project's installed/runtime acceptance. Maintenance
+repositories verify real disposable renders instead of pretending to publish an application.
+
+`docker/quality.mk` and `docker/coverage_report.py` are managed portable snapshots from
+`pythonTemplate/template/docker/`. The consuming repository declares its native commands and
+Docker stages, with no runtime dependency on a private sibling checkout. Language-specific
+Dart/Node reporters use their own toolchains and preserve the same exit-code policy.
+
+Dependency metadata and locks precede source COPY instructions. CI restores BuildKit cache by
+repository, image/target, platform and trusted/review role, then runs fresh test processes.
+A cached RUN is never test evidence. Artifacts cross jobs explicitly; `needs` alone transfers
+no image. Unchanged runtime inputs may reuse their verified digest; documentation or test
+changes never relabel an old artifact as a new source build. A cached solve is used where a
+safe skip has not been proven. Keep private SDK intermediate caches private and use BuildKit
+secret mounts, never build ARG/ENV credentials.
+
+Reports under `coverage/` include safe JSON/XML/HTML and a numeric `summary.md`; CI appends the
+summary to `GITHUB_STEP_SUMMARY`. Workflow warning data is escaped. Runtime zero-test collection,
+assertion failures, build/types/config/security/access errors and malformed evidence fail.
+The isolated `tests/test_coverage_policy.py` suite verifies these distinctions with real pytest
+subprocesses and build failures. Coverage gaps alone do not keep an otherwise ready PR Draft.

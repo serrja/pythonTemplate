@@ -14,7 +14,7 @@ The author checks the full diff and outgoing commits. A reviewer checks correctn
 
 ## 🧪 Checks
 
-Run `make check`, then render each supported profile and run its canonical generated commands. Testing-enabled renders include meaningful package, CLI, or HTTP foundation tests and a complete Python coverage gate. The [testing guide](testing.md) owns the denominator and isolated-resource rules. `pytest` exit 5 is a failure. Never use `pytest || true`, fake passing tests, or blanket skips to hide collection errors. Keep unit checks isolated; run integrations only against disposable dependencies with bounded readiness and cleanup.
+Run `make check`, then render each supported profile and run its canonical generated commands. Testing-enabled renders include meaningful package, CLI, or HTTP foundation tests and complete Python coverage reports with advisory percentages. The [testing guide](testing.md) owns the denominator and isolated-resource rules. `pytest` exit 5 is a failure. Never use `pytest || true`, fake passing tests, or blanket skips to hide collection errors. Keep unit checks isolated; run integrations only against disposable dependencies with bounded readiness and cleanup.
 
 ## 📝 Training example: PR
 
