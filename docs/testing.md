@@ -13,7 +13,7 @@ make test-integration
 
 `uv.lock` owns the maintenance dependency versions. `make test` runs the whole suite with statement and branch measurement, a strict 100% gate, missing counts, and JSON/XML output under `coverage/`. The denominator includes all canonical executable tooling under `tools/`, including modules that were never imported. Tests, Jinja, vendored snapshots, and generated output are not Python tooling coverage.
 
-The suite uses temporary directories and real local Git refs for Copier update tests. It verifies source identity, owned-file preservation, overlap conflicts, rejected snapshot edits, and failed subprocess propagation. It never changes a source repository's refs or working data.
+The suite uses temporary directories and real local Git refs for Copier update tests. It verifies source identity, owned-file preservation, overlap conflicts, rejected snapshot edits, and failed subprocess propagation. It never changes a source repository's refs or working data. `tools/test_composition.py` is the canonical shared composition suite; explicit parent refresh propagates it alongside the composition tool, with the same provenance and local-edit protection. Derivatives run that managed suite against their own pinned tool rather than maintaining independent copies.
 
 ## Verify a generated project
 

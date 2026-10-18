@@ -199,3 +199,26 @@ def test_update_preserves_owner_files_and_detects_overlap(tmp_path: Path) -> Non
     assert conflicts, (
         f"Copier silently resolved an overlapping edit: {result.returncode}"
     )
+
+
+@pytest.mark.parametrize("name", ["x", "examplecli"])
+def test_short_cli_name_keeps_formatter_stable(tmp_path: Path, name: str) -> None:
+    source, revision = _source(tmp_path)
+    output = tmp_path / "output"
+    _run(
+        *COPIER,
+        "copy",
+        "--quiet",
+        "--defaults",
+        f"--vcs-ref={revision}",
+        str(source),
+        str(output),
+        "-d",
+        f"projectName={name}",
+        "-d",
+        "profile=cli",
+        "-d",
+        "withCi=false",
+    )
+    _run(sys.executable, "-m", "ruff", "check", str(output / "src"))
+    _run(sys.executable, "-m", "ruff", "format", "--check", str(output / "src"))

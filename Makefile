@@ -24,7 +24,7 @@ test: ## Run composition and real Copier regressions with full coverage.
 	$(UV) run --locked pytest --cov --cov-report=term-missing --cov-report=json --cov-report=xml
 
 test-unit: ## Run composition behavior tests.
-	$(UV) run --locked pytest tests/test_composition.py
+	$(UV) run --locked pytest tools/test_composition.py
 
 test-integration: ## Run real Copier render and update tests.
 	$(UV) run --locked pytest tests/test_template.py

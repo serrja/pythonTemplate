@@ -41,6 +41,7 @@ def base(tmp_path: Path) -> Path:
     write(root / "template/nested/value.txt", "Nested content\n")
     write(root / "copier.yml", "_subdirectory: template\n")
     write(root / "tools/compose_template.py", TOOL.read_text())
+    write(root / "tools/test_composition.py", Path(__file__).read_text())
     return root
 
 
@@ -130,6 +131,7 @@ def test_refresh_records_git_and_parent_composition(tmp_path: Path, base: Path) 
 
 def test_refresh_without_tool_or_git(tmp_path: Path, base: Path) -> None:
     (base / "tools/compose_template.py").unlink()
+    (base / "tools/test_composition.py").unlink()
     root = tmp_path / "derivative"
     root.mkdir()
     snapshot = root / "_sources/base"
@@ -140,7 +142,9 @@ def test_refresh_without_tool_or_git(tmp_path: Path, base: Path) -> None:
     assert not (snapshot / "tools").exists()
 
 
-@pytest.mark.parametrize("tool_name", ["composeTemplate.py", "compose_template.py"])
+@pytest.mark.parametrize(
+    "tool_name", ["composeTemplate.py", "compose_template.py", "test_composition.py"]
+)
 def test_refresh_rejects_unreviewed_local_tool(
     tmp_path: Path, base: Path, tool_name: str
 ) -> None:
@@ -251,6 +255,28 @@ def test_assemble_without_local_tool(derivative: tuple[Path, dict[str, Any]]) ->
     root, config = derivative
     (root / "tools/compose_template.py").unlink()
     assert composer.assemble(root, config)["owners"]["owned.txt"] == "overlay"
+
+
+def test_shared_cases_are_managed_and_removable(
+    derivative: tuple[Path, dict[str, Any]], base: Path
+) -> None:
+    root, config = derivative
+    cases = root / "tools/test_composition.py"
+    assert cases.read_bytes() == (base / "tools/test_composition.py").read_bytes()
+    cases.write_text("Local suite edit\n")
+    with pytest.raises(ValueError, match="differs from the pinned parent"):
+        composer.assemble(root, config)
+    cases.write_bytes((base / "tools/test_composition.py").read_bytes())
+    (base / "tools/test_composition.py").unlink()
+    composer.refresh_snapshot(root, base, root / "_sources/base")
+    assert not cases.exists()
+    assert composer.assemble(root, config)["schema"] == 1
+
+
+def test_stamp_without_shared_cases(base: Path) -> None:
+    first = composer.stamp_base(base)
+    (base / "tools/test_composition.py").unlink()
+    assert composer.stamp_base(base) != first
 
 
 def test_assemble_rejects_parent_drift(derivative: tuple[Path, dict[str, Any]]) -> None:
