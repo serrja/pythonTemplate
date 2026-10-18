@@ -28,6 +28,8 @@ Fresh renders resolve their first lock; an existing application must use its com
 
 Generated coverage includes every module in the application's package, also when never imported. The path mapping supports both a source environment and an installed wheel. Report their executions separately and identify the tested source/artifact; do not let a checkout shadow the wheel.
 
+Pytest uses `importlib` mode so a project-owned test and a foundation test may share a basename without colliding. Use fixture discovery or explicit package imports; do not rely on pytest adding test directories to `sys.path`.
+
 ## HTTP and external resources
 
 Ordinary HTTP tests use `with TestClient(application) as client`, so startup and shutdown belong to the same test. Assert resource state before, during, and after the context. Disable exception propagation only for the individual handled-500 test. The retained legacy service profile has technical tests; new HTTP projects use the FastAPI derivative's maintained foundation.

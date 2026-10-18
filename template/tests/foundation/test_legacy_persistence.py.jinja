@@ -59,6 +59,18 @@ def test_readiness_without_started_resources_fails_closed() -> None:
         asyncio.run(health.ready(request))
 
 
+def test_invalid_port_is_redacted(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv(
+        "DATABASE_URL", "postgresql+asyncpg://test:test@127.0.0.1:synthetic-secret/test"
+    )
+    application = create_app()
+    with pytest.raises(ValueError, match="Invalid DATABASE_URL") as error:
+        with TestClient(application):
+            pytest.fail("Invalid engine configuration must prevent startup")
+    assert "synthetic-secret" not in str(error.value)
+    assert not hasattr(application.state, "db_engine")
+
+
 def test_readiness_queries_the_enabled_connection(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

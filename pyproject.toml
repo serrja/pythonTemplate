@@ -30,7 +30,7 @@ explicit_package_bases = true
 files = ["tools"]
 
 [tool.pytest.ini_options]
-addopts = "--strict-markers --strict-config"
+addopts = "--strict-markers --strict-config --import-mode=importlib"
 testpaths = ["tests", "tools/test_composition.py"]
 pythonpath = ["."]
 

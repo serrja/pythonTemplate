@@ -222,3 +222,42 @@ def test_short_cli_name_keeps_formatter_stable(tmp_path: Path, name: str) -> Non
     )
     _run(sys.executable, "-m", "ruff", "check", str(output / "src"))
     _run(sys.executable, "-m", "ruff", "format", "--check", str(output / "src"))
+
+
+def test_project_and_foundation_test_names_do_not_collide(tmp_path: Path) -> None:
+    source, revision = _source(tmp_path)
+    output = tmp_path / "output"
+    _run(
+        *COPIER,
+        "copy",
+        "--quiet",
+        "--defaults",
+        f"--vcs-ref={revision}",
+        str(source),
+        str(output),
+        "-d",
+        "projectName=sampleLibrary",
+        "-d",
+        "profile=library",
+        "-d",
+        "withCi=false",
+    )
+    for directory in ("tests", "tests/foundation"):
+        file = output / directory / "test_collision.py"
+        file.parent.mkdir(parents=True, exist_ok=True)
+        file.write_text(
+            '"""Test the collected module identity."""\n'
+            "from __future__ import annotations\n"
+            "from pathlib import Path\n"
+            "def test_module_identity() -> None:\n"
+            f'    assert Path(__file__).parent.name == "{file.parent.name}"\n'
+        )
+    _run(
+        sys.executable,
+        "-m",
+        "pytest",
+        "-q",
+        "tests/test_collision.py",
+        "tests/foundation/test_collision.py",
+        cwd=output,
+    )

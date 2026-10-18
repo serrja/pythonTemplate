@@ -36,7 +36,7 @@ strict = true
 files = ["src/{{ packageName }}"]{% if withTesting | default(true) %}
 
 [tool.pytest.ini_options]
-addopts = "--strict-markers --strict-config"
+addopts = "--strict-markers --strict-config --import-mode=importlib"
 markers = ["unit: isolated unit tests", "integration: external dependency tests", "contract: public contract tests"]
 
 [tool.coverage.run]
