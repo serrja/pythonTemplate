@@ -24,7 +24,7 @@
     },
     "docker/coverage_report.py": {
       "source": "template/docker/coverage_report.py",
-      "sha256": "ae81c3ce16a3fb48ddae1cd782d9e4a045ee8f9364c3e5a51a00cf11938827bb"
+      "sha256": "c679b3bbfb8f1019f014abcaa973cce5ef094f73eefb125f1fc388963400d3bf"
     },
     ".github/workflows/contribution.yml": {
       "source": "template/.github/workflows/contribution.yml",

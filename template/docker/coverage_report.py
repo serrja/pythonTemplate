@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any
@@ -71,14 +72,14 @@ def report(path: Path, report_format: str, output: Path, after: Path | None) -> 
         if hit < total:
             message = f"Coverage advisory: {name} {hit}/{total} ({percentage}); "
             message += f"{total - hit} missing."
-            print(f"WARNING: {message}")
+            sys.stdout.write(f"WARNING: {message}\n")
             if os.environ.get("GITHUB_ACTIONS") == "true":
-                print(f"::warning::{annotation(message)}")
+                sys.stdout.write(f"::warning::{annotation(message)}\n")
     text = "\n".join(rows)
     text += "\n\nCoverage percentages are advisory; test and report errors fail.\n"
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(text)
-    print(text)
+    sys.stdout.write(text + "\n")
     return text
 
 
