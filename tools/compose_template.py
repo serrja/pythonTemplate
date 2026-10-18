@@ -22,7 +22,7 @@ IGNORED_PARTS = {
     ".ruff_cache",
     ".pytest_cache",
 }
-BASE_TEMPLATE_VERSION = "0.1.0.dev0"
+BASE_TEMPLATE_VERSION = "0.2.0.dev0"
 BASE_ANSWERS_SCHEMA = 1
 
 
@@ -178,6 +178,7 @@ def refresh_snapshot(repo: Path, base: Path, snapshot: Path) -> None:
         legacy_tool = repo / "tools/composeTemplate.py"
         legacy_tool.unlink(missing_ok=True)
         if parent_tool.is_file():
+            (repo / "tools").mkdir(parents=True, exist_ok=True)
             shutil.copy2(
                 snapshot / "tools/compose_template.py",
                 repo / "tools/compose_template.py",
@@ -192,7 +193,7 @@ def assemble(repo: Path, config: dict[str, Any]) -> dict[str, Any]:
     answers_schema = config["answersSchema"]
     if not isinstance(template_version, str) or not template_version:
         raise ValueError("Derivative templateVersion must be a nonempty string")
-    if not isinstance(answers_schema, int) or answers_schema < 1:
+    if type(answers_schema) is not int or answers_schema < 1:
         raise ValueError("Derivative answersSchema must be a positive integer")
     snapshot = repo / config["snapshot"]
     derived_tool = repo / "tools/compose_template.py"
