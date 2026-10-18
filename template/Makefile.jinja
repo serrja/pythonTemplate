@@ -26,7 +26,8 @@ typecheck: ## Check strict Python types.
 	@echo 'Testing was disabled for this render.' >&2
 	@exit 2
 {% endif %}
-test: test-unit ## Run every test required by this project's capabilities.
+{% block fullTestTarget %}test: test-unit ## Run every test required by this project's capabilities.
+{% endblock %}
 
 check: lint typecheck{% if withTesting | default(true) %} test{% endif %} ## Run the mandatory non-mutating checks.
 	$(UV) lock --check
