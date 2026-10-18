@@ -6,12 +6,68 @@ import os
 import shutil
 import subprocess
 import sys
+import tarfile
 from pathlib import Path
 
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 COPIER = [sys.executable, "-m", "copier"]
+
+
+@pytest.mark.parametrize("profile", ["cli", "library", "service", "native"])
+def test_no_git_sdist_omits_private_runtime_files_and_retains_legitimate_core(
+    tmp_path: Path, profile: str
+) -> None:
+    source, revision = _source(tmp_path)
+    output = tmp_path / "output"
+    _run(
+        *COPIER,
+        "copy",
+        "--quiet",
+        "--defaults",
+        f"--vcs-ref={revision}",
+        str(source),
+        str(output),
+        "-d",
+        "projectName=privacyProject",
+        "-d",
+        f"profile={profile}",
+        "-d",
+        "withCi=false",
+    )
+    markers = [
+        ".aws/credentials",
+        ".agents/private.txt",
+        ".codex/private.txt",
+        ".serena/private.txt",
+        ".local/private.txt",
+        "backups/private.txt",
+        ".env.private",
+        "core.1234",
+        ".coverage",
+        ".coverage.worker",
+    ]
+    for name in markers:
+        path = output / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("SYNTHETIC-PRIVATE-MARKER")
+        path.chmod(0)
+    core = output / "src/privacyproject/core/kept.py"
+    core.parent.mkdir()
+    core.write_text('"""Legitimate package module."""\n')
+    (output / ".coveragerc").write_text("[run]\nbranch = true\n")
+    try:
+        _run("uv", "build", "--sdist", "--offline", cwd=output)
+        archive = next((output / "dist").glob("*.tar.gz"))
+        with tarfile.open(archive) as bundle:
+            names = {name.split("/", 1)[-1] for name in bundle.getnames()}
+        assert not set(markers) & names
+        assert "src/privacyproject/core/kept.py" in names
+        assert ".coveragerc" in names
+    finally:
+        for name in markers:
+            (output / name).chmod(0o600)
 
 
 def _run(*args: str, cwd: Path | None = None) -> str:
