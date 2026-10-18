@@ -36,8 +36,9 @@ pythonpath = ["."]
 
 [tool.coverage.run]
 branch = true
+patch = ["subprocess"]
 source = ["tools"]
-omit = ["tools/test_composition.py"]
+omit = ["*/tools/test_composition.py"]
 
 [tool.coverage.report]
 fail_under = 100
