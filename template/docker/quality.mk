@@ -40,6 +40,7 @@ lint typecheck $(QUALITY_EXTRA_TARGETS): quality-image
 	$(QUALITY_RUN) make $@
 test-unit: test ## Compatibility name; runs the canonical suite once.
 test: quality-image ## Fresh execution after cached image restoration.
+	@rm -f coverage/test-image-id.txt
 	@touch coverage/.started
 	$(QUALITY_RUN) make $(QUALITY_TEST)
 	$(QUALITY_RUN) $(COVERAGE_COMMAND)
@@ -47,7 +48,8 @@ test: quality-image ## Fresh execution after cached image restoration.
 coverage: quality-image ## Report a fresh result; never rerun tests.
 	@test "$$(cat coverage/test-image-id.txt)" = "$$($(DOCKER) image inspect $(QUALITY_IMAGE) --format '{{.Id}}')" || { echo 'Missing/stale coverage: run make test for the current inputs.' >&2; exit 1; }
 	$(QUALITY_RUN) $(COVERAGE_COMMAND)
-check: lint typecheck test ## Run static checks and one fresh suite.
+check: QUALITY_TEST := check
+check: test ## Run the native mandatory checks and one fresh suite.
 build: ## Export distributions from the canonical cached build graph.
 	$(BUILD_COMMAND)
 image: ## Build a local runtime candidate; never publish it.

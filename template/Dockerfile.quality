@@ -9,11 +9,11 @@ COPY pyproject.toml uv.lock README.md .gitignore ./
 RUN --mount=type=cache,id=python-quality-uv-314-linux-amd64,target=/root/.cache/uv,sharing=locked uv sync --locked --all-groups --no-install-project
 FROM quality-dependencies AS quality
 COPY --chmod=u=rwX,go=rX . ./
-RUN uv sync --locked --offline --no-build-isolation
+RUN --mount=type=cache,id=python-quality-uv-314-linux-amd64,target=/root/.cache/uv,sharing=locked uv sync --locked --all-groups
 CMD ["make", "check"]
 
 FROM quality AS package-build
-RUN --network=none uv build --no-build-isolation --wheel --sdist --out-dir /artifacts
+RUN --mount=type=cache,id=python-quality-uv-314-linux-amd64,target=/root/.cache/uv,sharing=locked uv build --wheel --sdist --out-dir /artifacts
 FROM scratch AS artifacts
 COPY --from=package-build /artifacts/ /
 
