@@ -144,7 +144,10 @@ def test_update_preserves_owner_files_and_detects_overlap(tmp_path: Path) -> Non
     _run(*COPIER, "update", "--quiet", "--defaults", f"--vcs-ref={second}", cwd=output)
     assert "Owner note is retained." in owner.read_text()
     assert "Updated source marker." in (output / "README.md").read_text()
-    assert _run("make", "owner-check", cwd=output) == "owner-command"
+    assert (
+        _run("make", "--no-print-directory", "owner-check", cwd=output)
+        == "owner-command"
+    )
     assert not _git(output, "ls-files", "-u")
     assert not list(output.rglob("*.rej"))
 
