@@ -35,10 +35,12 @@ def measurements(path: Path, report_format: str) -> dict[str, tuple[int, int] | 
         if root.tag != "coverage" or not root.findall(".//class"):
             raise ValueError("Empty or invalid Cobertura report")
         lines = counter(
-            int(root.attrib["lines-covered"]), int(root.attrib["lines-valid"])
+            int(root.attrib["lines-covered"]),
+            int(root.attrib["lines-valid"]),
         )
         branches = counter(
-            int(root.attrib["branches-covered"]), int(root.attrib["branches-valid"])
+            int(root.attrib["branches-covered"]),
+            int(root.attrib["branches-valid"]),
         )
     if lines[1] == 0:
         raise ValueError("Runtime coverage has no executable lines")
@@ -62,22 +64,18 @@ def report(path: Path, report_format: str, output: Path, after: Path | None) -> 
             rows.append(f"| {name} | notMeasured | notMeasured | notMeasured |")
             continue
         hit, total = value
-        percentage = (
-            f"{100 * hit / total:.2f}%" if total else "notApplicable (no branches)"
-        )
+        percentage = "notApplicable (no branches)"
+        if total:
+            percentage = f"{100 * hit / total:.2f}%"
         rows.append(f"| {name} | {hit} / {total} | {total - hit} | {percentage} |")
         if hit < total:
-            message = (
-                f"Coverage advisory: {name} {hit}/{total} ({percentage}); "
-                f"{total - hit} missing."
-            )
+            message = f"Coverage advisory: {name} {hit}/{total} ({percentage}); "
+            message += f"{total - hit} missing."
             print(f"WARNING: {message}")
             if os.environ.get("GITHUB_ACTIONS") == "true":
                 print(f"::warning::{annotation(message)}")
-    text = (
-        "\n".join(rows)
-        + "\n\nCoverage percentages are advisory; test and report errors fail.\n"
-    )
+    text = "\n".join(rows)
+    text += "\n\nCoverage percentages are advisory; test and report errors fail.\n"
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(text)
     print(text)
@@ -88,7 +86,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("path", type=Path)
     parser.add_argument(
-        "--format", choices=["coveragepy", "cobertura"], default="coveragepy"
+        "--format",
+        choices=["coveragepy", "cobertura"],
+        default="coveragepy",
     )
     parser.add_argument("--output", type=Path, default=Path("coverage/summary.md"))
     parser.add_argument("--after", type=Path)
