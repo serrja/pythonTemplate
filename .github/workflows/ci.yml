@@ -26,6 +26,7 @@ jobs:
           enable-cache: true
           cache-dependency-glob: uv.lock
       - run: uv python install 3.12
+      - uses: ./template/.github/actions/actionlint
       - name: Source quality and Copier regressions
         run: |
           uv sync --locked --python 3.12
@@ -64,6 +65,9 @@ jobs:
           uv lock
           uv sync --locked --python 3.12
           make check build
+      - uses: ./template/.github/actions/actionlint
+        with:
+          directory: ${{ runner.temp }}/rendered
       - name: Render artifact evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

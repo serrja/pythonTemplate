@@ -12,6 +12,8 @@ _skip_if_exists:
 _exclude:
   - "{% if not (withCi | default(true)) %}.github/workflows{% endif %}"
   - "{% if not (withCi | default(true)) %}.github/workflows/**{% endif %}"
+  - "{% if not (withCi | default(true)) %}.github/actions{% endif %}"
+  - "{% if not (withCi | default(true)) %}.github/actions/**{% endif %}"
   - "{% if not (withTesting | default(true)) %}.pre-commit-config.yaml{% endif %}"
   - "{% if profile != 'cli' %}src/*/cli.py{% endif %}"
   - "{% if profile != 'cli' %}src/*/__main__.py{% endif %}"
