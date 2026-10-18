@@ -62,9 +62,39 @@ jobs:
       - name: Build generated project
         working-directory: ${{ runner.temp }}/rendered
         run: |
+          mkdir -p .aws .agents .codex .serena .local backups
+          for directory in .aws .agents .codex .serena .local backups; do
+            printf '%s\n' synthetic-not-credentials > "$directory/fixture"
+          done
+          printf '%s\n' SYNTHETIC=private-marker > .env.private
           uv lock
           uv sync --locked --python 3.12
           make check build
+      - name: Distribution excludes local metadata even outside Git
+        working-directory: ${{ runner.temp }}/rendered
+        run: |
+          python - <<'PY'
+          import tarfile
+          import zipfile
+          from pathlib import Path
+
+          forbidden = {
+              '.aws', '.agents', '.codex', '.serena',
+              '.local', 'backups', '.env.private',
+          }
+          assert list(Path('dist').glob('*.whl'))
+          assert list(Path('dist').glob('*.tar.gz'))
+          for path in Path('dist').iterdir():
+              if path.suffix == '.whl':
+                  with zipfile.ZipFile(path) as archive:
+                      names = archive.namelist()
+              elif path.name.endswith('.tar.gz'):
+                  with tarfile.open(path) as archive:
+                      names = archive.getnames()
+              else:
+                  continue
+              assert not [name for name in names if forbidden.intersection(Path(name).parts)], path
+          PY
       - uses: ./template/.github/actions/actionlint
         with:
           directory: ${{ runner.temp }}/rendered
