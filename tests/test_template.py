@@ -58,7 +58,18 @@ def test_no_git_sdist_omits_private_runtime_files_and_retains_legitimate_core(
     core.write_text('"""Legitimate package module."""\n')
     (output / ".coveragerc").write_text("[run]\nbranch = true\n")
     try:
-        _run("uv", "build", "--sdist", "--offline", cwd=output)
+        _run(
+            "uv",
+            "build",
+            "--sdist",
+            "--offline",
+            "--no-build-isolation",
+            "--python",
+            sys.executable,
+            "--cache-dir",
+            str(tmp_path / "empty-build-cache"),
+            cwd=output,
+        )
         archive = next((output / "dist").glob("*.tar.gz"))
         with tarfile.open(archive) as bundle:
             names = {name.split("/", 1)[-1] for name in bundle.getnames()}
