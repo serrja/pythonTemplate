@@ -64,6 +64,16 @@ jobs:
           uv lock
           uv sync --locked --python 3.12
           make check build
+      - name: Render artifact evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: render-${{ matrix.variant }}
+          path: |
+            ${{ runner.temp }}/rendered/dist/
+            ${{ runner.temp }}/rendered/coverage/
+            ${{ runner.temp }}/rendered/.template-source.json
+          if-no-files-found: error
       - name: Service import
         if: matrix.profile == 'service'
         working-directory: ${{ runner.temp }}/rendered

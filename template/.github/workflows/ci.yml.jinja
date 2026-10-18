@@ -43,7 +43,7 @@ jobs:
 {% else %}      - name: Testing capability omitted by render answers
         run: echo 'NOT_APPLICABLE - withTesting=false'
 {% endif %}
-      - run: uv build
+      - run: make build
 {% if profile == 'service' %}      - run: docker build --file Dockerfile --tag {{ packageName }}:ci .
       - run: uv run --locked python -c 'from {{ packageName }}.app import app; print(app.title)'
 {% endif -%}
