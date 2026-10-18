@@ -37,3 +37,6 @@ check: lint typecheck{% if withTesting | default(true) %} test{% endif %} ## Run
 run: ## Run the existing command without rebuilding.
 	$(UV) run --locked {{ projectName }}
 {% endif %}{% block extraCommands %}{% endblock %}
+
+# Project-owned commands survive Copier updates without copying shared recipes.
+-include Makefile.local
