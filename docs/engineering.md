@@ -61,3 +61,9 @@ exhaustive handling; a type assertion is not runtime validation. Small local
 literals and independent protocol fixtures do not need a global constants file.
 Timeouts and retry limits carry units and remain with the policy that uses them.
 Frontend-specific syntax and lifecycle rules belong to pokerWeb/pokerClient.
+
+Imports that cross a parent directory use an absolute package name or the project's
+native alias. Local imports within a directory remain valid. Python enforces the
+boundary with Ruff TID252 (`parents`); do not change external or historical vendored
+sources to satisfy an owned-source rule. Validate executable and installed imports
+outside the checkout, not only the editor's path resolution.
