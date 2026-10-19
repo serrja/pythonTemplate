@@ -50,3 +50,14 @@ source belongs only to typerTemplate. Legacy service/native profiles remain pinn
 compatibility paths, with new HTTP development in fastApiTemplate. Existing
 project-specific settings and tests survive updates. Python names follow PEP 8;
 Pokerlost external camelCase conventions do not change generic Python/HTTP names.
+
+## 🧩 Typed contracts and values
+
+The nearest boundary owner defines meaningful states, events, operation names and
+settings. Prefer an enum or discriminated union for a closed vocabulary, a typed
+configuration for deployment choices, and a schema for untrusted messages. Keep
+wire encodings explicit and stable. Test unknown variants, serialization and
+exhaustive handling; a type assertion is not runtime validation. Small local
+literals and independent protocol fixtures do not need a global constants file.
+Timeouts and retry limits carry units and remain with the policy that uses them.
+Frontend-specific syntax and lifecycle rules belong to pokerWeb/pokerClient.

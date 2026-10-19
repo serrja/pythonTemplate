@@ -238,12 +238,9 @@ def refresh_snapshot(repo: Path, base: Path, snapshot: Path) -> None:
 
 
 def assemble(repo: Path, config: dict[str, Any]) -> dict[str, Any]:
-    template_version = config["templateVersion"]
-    answers_schema = config["answersSchema"]
-    if not isinstance(template_version, str) or not template_version:
-        raise ValueError("Derivative templateVersion must be a nonempty string")
-    if type(answers_schema) is not int or answers_schema < 1:
-        raise ValueError("Derivative answersSchema must be a positive integer")
+    validated = CompositionConfig.model_validate(config)
+    template_version = validated.template_version
+    answers_schema = validated.answers_schema
     snapshot = repo / config["snapshot"]
     for name in ("compose_template.py", "test_composition.py"):
         derived_tool = repo / "tools" / name
