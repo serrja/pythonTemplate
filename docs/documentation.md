@@ -21,3 +21,14 @@ Contributing instructions describe one local quality command, review scope, and 
 ## 🔒 Facts to check
 
 Check Python and tool versions, dependencies, commands, anchors, permissions, user-owned files, build artifacts, and external links against the current project. If a fact cannot be checked, state the limitation where it matters.
+
+## 🌐 Portfolio and external readers
+
+Describe the actual problem, implemented scope and known limits. Include a small
+architecture diagram when it clarifies ownership, verified prerequisites and
+quickstart commands, and the tests/builds a fresh reader can reproduce. Distinguish
+public materials from private source and hosted production behavior. Preserve the
+actual license; an absent license requires an owner decision before publication.
+Keep personal resumes, hiring advice and private infrastructure details outside
+project documentation. A successful check proves its stated scenario, not an
+unmeasured reliability or commercial outcome.

@@ -1,5 +1,7 @@
 # Generic service foundation
 
+This page describes the retained legacy `service` profile. New generic web foundations are maintained in `fastApiTemplate`, which composes a pinned snapshot of this Python source. Existing renders remain reproducible from their recorded commit; migrate by reviewing managed paths and project-owned files, not by replacing an application tree in place.
+
 The `service` profile renders an independent FastAPI project. It has no Pokerlost package, credential, operation, or private checkout dependency.
 
 ## 🧭 Ownership

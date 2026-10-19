@@ -2,6 +2,8 @@
 
 This is the canonical process for the generic template. Generated projects receive a concise local `CONTRIBUTING.md` with their actual commands.
 
+Read the [naming policy](naming.md), [versioning policy](versioning.md), and [release procedure](releaseGuide.md) for shared rules. The [composition ADR](adr/templateComposition.md) identifies the owner of derived source files.
+
 ## 🔀 Branch and review
 
 Start a short branch from the repository's actual default branch: `feat/addHealthCheck`, `fix/preserveSettings`, `docs/releaseGuide`, or another `type/shortCamelCaseIntent`. Existing default branches are not renamed for style. Keep behavior, rename, dependency updates, and cleanup in separate reviews when their risk differs.
@@ -12,7 +14,7 @@ The author checks the full diff and outgoing commits. A reviewer checks correctn
 
 ## 🧪 Checks
 
-For this template, render each profile and run its canonical generated commands. A pristine scaffold has no subject tests; record `notConfigured`. After a project adds tests, `pytest` exit 5 is a failure. Never use `pytest || true`, fake passing tests, or blanket skips to hide collection errors. Keep unit checks isolated; run integrations only against disposable dependencies with bounded readiness and cleanup.
+Run `make check`, then render each supported profile and run its canonical generated commands. Testing-enabled renders include meaningful package, CLI, or HTTP foundation tests and complete Python coverage reports with advisory percentages. The [testing guide](testing.md) owns the denominator and isolated-resource rules. `pytest` exit 5 is a failure. Never use `pytest || true`, fake passing tests, or blanket skips to hide collection errors. Keep unit checks isolated; run integrations only against disposable dependencies with bounded readiness and cleanup.
 
 ## 📝 Training example: PR
 
@@ -35,3 +37,12 @@ For this template, render each profile and run its canonical generated commands.
 **Expected:** It returns 200 only when the required dependency is reachable.
 
 **Reproduction:** State the package version, OS, whether persistence is enabled, and a disposable database setup. Include redacted logs and the exact command/result. Never attach `DATABASE_URL`, `.env`, VPN links, credentials, or a working database.
+
+## Metadata check
+
+The managed `Contribution` workflow validates new `type/shortCamelCaseIntent` branches and
+`type(scope): intent` PR titles using event metadata without checking out or executing PR code.
+An existing published branch with older spelling may be recorded exactly in the repository
+variable `LEGACY_PUBLISHED_BRANCH`; this does not authorize renaming it or accepting other
+new spellings. The Python base owns the workflow; consumers keep a reviewed full-SHA snapshot
+with `.github/engineering-source.json`. GitHub does not inherit workflows from defaults.

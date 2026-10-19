@@ -5,3 +5,17 @@
 __pycache__/
 dist/
 .DS_Store
+*.py[cod]
+.coverage
+.coverage.*
+coverage/
+
+/core.[0-9]*
+
+.aws
+.agents/
+.codex/
+.serena/
+.local/
+backups/
+.vscode/
