@@ -118,6 +118,63 @@ def _source(tmp_path: Path) -> tuple[Path, str]:
     return source, _commit(source, "base template")
 
 
+def test_fresh_copy_and_update_never_restore_editor_state(tmp_path: Path) -> None:
+    source, first = _source(tmp_path)
+    output = tmp_path / "updated"
+    arguments = [
+        "-d",
+        "projectName=editorSafe",
+        "-d",
+        "profile=library",
+        "-d",
+        "withCi=false",
+    ]
+    _run(
+        *COPIER,
+        "copy",
+        "--quiet",
+        "--defaults",
+        f"--vcs-ref={first}",
+        str(source),
+        str(output),
+        *arguments,
+    )
+    _git(output, "init", "--quiet")
+    _git(output, "add", ".")
+    _git(
+        output,
+        "-c",
+        "user.name=Template Test",
+        "-c",
+        "user.email=template-test@example.invalid",
+        "commit",
+        "--quiet",
+        "-m",
+        "initial render",
+    )
+    for directory, name in [(".vscode", "settings.json"), (".serena", "project.yml")]:
+        marker = source / "template" / directory / name
+        marker.parent.mkdir()
+        marker.write_text("synthetic editor state")
+        _git(source, "add", "--force", str(marker.relative_to(source)))
+    second = _commit(source, "source accidentally contains editor state")
+    _run(*COPIER, "update", "--quiet", "--defaults", f"--vcs-ref={second}", cwd=output)
+    fresh = tmp_path / "fresh"
+    _run(
+        *COPIER,
+        "copy",
+        "--quiet",
+        "--defaults",
+        f"--vcs-ref={second}",
+        str(source),
+        str(fresh),
+        *arguments,
+    )
+    for destination in [output, fresh]:
+        assert not (destination / ".vscode").exists()
+        assert not (destination / ".serena").exists()
+
+
 @pytest.mark.parametrize(
     ("profile", "persistence"),
     [
