@@ -1,5 +1,7 @@
 # ADR: pinned source composition
 
+This decision defines source ownership and reproducible template composition.
+
 ## Context
 
 Copier does not implicitly inherit a remote template. Layering independent templates over one answers file obscures provenance and creates conflicts for `pyproject.toml`, README, and CI.
@@ -10,7 +12,7 @@ A derivative carries a content-addressed snapshot of its parent Copier source, a
 
 A new parent revision is deliberately refreshed into the derivative snapshot, reviewed, assembled, rendered, and then propagated downstream. A dirty parent is identified by content hash and marked dirty; its old clean HEAD is never represented as the changed source. Release/tag decisions remain separate. The two generic repositories and Pokerlost specialization remain separate Git histories.
 
-The composition command itself is owned by this Python base. A derivative's root `tools/compose_template.py`, when present, is a checked mirror of the pinned parent tool. Refresh updates that mirror only if it still matches the previous snapshot; clean rebuilds reject a divergent mirror. During the one-time script rename, refresh checks the prior `composeTemplate.py` mirror against its pinned snapshot before replacing it. The specialized template invokes the tool from its pinned FastAPI snapshot.
+The composition command itself is owned by this Python base. Typer and FastAPI are sibling specializations; Pokerlost serviceTemplate derives only from FastAPI. Typer owns CLI source and CliRunner tests, while the base owns common engineering policy. A derivative's root `tools/compose_template.py`, when present, is a checked mirror of the pinned parent tool. Refresh updates that mirror only if it still matches the previous snapshot; clean rebuilds reject a divergent mirror. The specialized service invokes the tool from its pinned FastAPI snapshot.
 
 ## Consequences
 

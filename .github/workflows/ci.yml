@@ -52,7 +52,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {profile: cli, variant: cli, persistence: false}
           - {profile: library, variant: library, persistence: false}
           - {profile: service, variant: service, persistence: false}
           - {profile: service, variant: serviceDb, persistence: true}

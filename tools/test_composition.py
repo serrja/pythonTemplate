@@ -335,7 +335,9 @@ def test_main_stamp_entrypoint(
     base: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     monkeypatch.setattr(sys, "argv", [str(TOOL), "--repo", str(base), "--stamp-base"])
-    runpy.run_path(str(TOOL), run_name="__main__")
+    with pytest.raises(SystemExit) as status:
+        runpy.run_path(str(TOOL), run_name="__main__")
+    assert status.value.code == 0
     stamp = json.loads((base / "template/.template-source.json").read_text())
     assert f"pythonTemplate={stamp['sourceContentSha256']}" in capsys.readouterr().out
 

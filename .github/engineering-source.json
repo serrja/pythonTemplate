@@ -24,7 +24,7 @@
     },
     "docker/coverage_report.py": {
       "source": "template/docker/coverage_report.py",
-      "sha256": "c679b3bbfb8f1019f014abcaa973cce5ef094f73eefb125f1fc388963400d3bf"
+      "sha256": "87c19af8b26f2134fb3ac06a8ea9325f22998cef28b15a37b9a2debf1ac00300"
     },
     ".github/workflows/contribution.yml": {
       "source": "template/.github/workflows/contribution.yml",
@@ -35,7 +35,8 @@
     "contributing": "docs/contributing.md",
     "naming": "docs/naming.md",
     "testing": "docs/testing.md",
-    "versioning": "docs/versioning.md"
+    "versioning": "docs/versioning.md",
+    "engineering": "docs/engineering.md"
   },
   "codeowners": "Project-specific assignment; not inherited from the template.",
   "role": "canonical source in this repository; content hashes identify managed files"

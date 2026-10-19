@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 COPIER = [sys.executable, "-m", "copier"]
 
 
-@pytest.mark.parametrize("profile", ["cli", "library", "service", "native"])
+@pytest.mark.parametrize("profile", ["library", "service", "native"])
 def test_no_git_sdist_omits_private_runtime_files_and_retains_legitimate_core(
     tmp_path: Path, profile: str
 ) -> None:
@@ -120,7 +120,6 @@ def _source(tmp_path: Path) -> tuple[Path, str]:
 @pytest.mark.parametrize(
     ("profile", "persistence"),
     [
-        ("cli", False),
         ("library", False),
         ("service", False),
         ("service", True),
@@ -171,7 +170,7 @@ def test_update_preserves_owner_files_and_detects_overlap(tmp_path: Path) -> Non
         "-d",
         "projectName=sampleProject",
         "-d",
-        "profile=cli",
+        "profile=library",
         "-d",
         "withCi=false",
     )
@@ -236,7 +235,7 @@ def test_update_preserves_owner_files_and_detects_overlap(tmp_path: Path) -> Non
     rendered = output / "README.md"
     rendered.write_text(
         rendered.read_text().replace(
-            "A typed Python command-line starting point.", "User-owned CLI description."
+            "A typed Python library starting point.", "User-owned library description."
         )
     )
     _git(output, "add", "README.md")
@@ -253,8 +252,8 @@ def test_update_preserves_owner_files_and_detects_overlap(tmp_path: Path) -> Non
     )
     readme.write_text(
         readme.read_text().replace(
-            "A typed Python command-line starting point.",
-            "New template CLI description.",
+            "A typed Python library starting point.",
+            "New template library description.",
         )
     )
     third = _commit(source, "change README wording")
@@ -289,7 +288,7 @@ def test_short_cli_name_keeps_formatter_stable(tmp_path: Path, name: str) -> Non
         "-d",
         f"projectName={name}",
         "-d",
-        "profile=cli",
+        "profile=library",
         "-d",
         "withCi=false",
     )
