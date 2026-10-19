@@ -42,3 +42,10 @@ pythonTemplate
 This source is private; the linked repositories may require authorization. No
 public distribution license has been selected. Generated foundation checks cover
 packaging and tooling; application behavior needs project-owned tests.
+
+## 📄 License
+
+The original source/templates use [MIT](LICENSE). [Third-party notices](THIRD_PARTY_NOTICES.md)
+remain applicable. Generated projects explicitly select `licensePolicy=MIT` plus
+their own holder/year, or retain the default `unlicensed` policy. Updates preserve
+owner license files. The template never makes a repository public.
