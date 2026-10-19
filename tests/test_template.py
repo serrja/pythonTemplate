@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import io
 import os
 import shutil
 import subprocess
@@ -496,3 +497,61 @@ def test_default_policy_has_no_invented_owner(tmp_path: Path) -> None:
     updated = _commit(source, "update template")
     _run(*COPIER, "update", "--quiet", "--defaults", f"--vcs-ref={updated}", cwd=output)
     assert (output / "LICENSE").read_text() == "Owner terms preserved.\n"
+
+
+def test_license_policy_update_from_pre_policy_source(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    source.mkdir()
+    archive = subprocess.check_output(
+        [
+            "git",
+            "-C",
+            str(ROOT),
+            "archive",
+            "78fbc3798310380e18d463951c769c8b718e53df",
+            "copier.yml",
+            "template",
+        ]
+    )
+    with tarfile.open(fileobj=io.BytesIO(archive)) as bundle:
+        bundle.extractall(source, filter="data")
+    _git(source, "init", "--quiet")
+    first = _commit(source, "pre-policy source")
+    output = tmp_path / "application"
+    _run(
+        *COPIER,
+        "copy",
+        "--quiet",
+        "--defaults",
+        f"--vcs-ref={first}",
+        str(source),
+        str(output),
+        "-d",
+        "projectName=existingProject",
+        "-d",
+        "profile=library",
+        "-d",
+        "withCi=false",
+    )
+    _git(output, "init", "--quiet")
+    (output / "LICENSE").write_text("Existing owner terms.\n")
+    _git(output, "add", ".")
+    _git(
+        output,
+        "-c",
+        "user.name=Template Test",
+        "-c",
+        "user.email=template-test@example.invalid",
+        "commit",
+        "--quiet",
+        "-m",
+        "owner",
+    )
+    shutil.rmtree(source / "template")
+    shutil.copytree(ROOT / "template", source / "template")
+    shutil.copy2(ROOT / "copier.yml", source / "copier.yml")
+    updated = _commit(source, "explicit policy source")
+    _run(*COPIER, "update", "--quiet", "--defaults", f"--vcs-ref={updated}", cwd=output)
+    assert (output / "LICENSE").read_text() == "Existing owner terms.\n"
+    assert (output / "LICENSES/pythonTemplate-MIT.txt").is_file()
+    assert not _git(output, "ls-files", "-u")

@@ -5,7 +5,7 @@ _skip_if_exists:
 _exclude:
   - _meta
   - _meta/**
-  - "{% if licensePolicy != 'MIT' %}LICENSE{% endif %}"
+  - "{% if licensePolicy | default('unlicensed') != 'MIT' %}LICENSE{% endif %}"
 licensePolicy:
   type: str
   choices: [unlicensed, MIT]
