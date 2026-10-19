@@ -33,13 +33,10 @@ Install the locked maintenance environment with `make install`, then run `make c
 
 The [engineering policy](docs/engineering.md) owns tool selection, versions, boundaries and exceptions. The [Markdown contract tool](tools/check_documentation.py) is maintained here as common engineering source; Typer parses its preserved command arguments. Consumers retain checked managed snapshots and provenance; fixes belong here first. Maintenance-only Typer/Pydantic dependencies do not become a library runtime dependency.
 
-```mermaid
-flowchart LR
-  Python[pythonTemplate] --> CLI[typerTemplate]
-  Python --> HTTP[fastApiTemplate]
-  HTTP --> Pokerlost[serviceTemplate]
-  CLI --> Installed[Independent installed application]
-  Pokerlost --> Installed
+```text
+pythonTemplate
+├── typerTemplate → independent installed CLI
+└── fastApiTemplate → serviceTemplate → independent installed service
 ```
 
 This source is private; the linked repositories may require authorization. No
