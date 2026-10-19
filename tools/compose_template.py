@@ -46,6 +46,9 @@ class CompositionConfig(BaseModel):
     overlay: str
     output: str
     include: list[str]
+    include_repository: list[str] = Field(
+        default_factory=list, alias="includeRepository"
+    )
     allow_override: list[str] = Field(default_factory=list, alias="allowOverride")
     retain_base: dict[str, str] = Field(default_factory=dict, alias="retainBase")
     smoke_answers: dict[str, str | bool | int] = Field(alias="smokeAnswers")
@@ -268,6 +271,21 @@ def assemble(repo: Path, config: dict[str, Any]) -> dict[str, Any]:
         raise ValueError("Pinned parent source identity does not match its snapshot")
     base_files = source_files(snapshot / "template")
     overlay_files = source_files(overlay)
+    repository_files: dict[str, Path] = {}
+    for name in config.get("includeRepository", []):
+        path = repo / name
+        if (
+            Path(name).is_absolute()
+            or ".." in Path(name).parts
+            or any(part in IGNORED_PARTS for part in Path(name).parts)
+            or path.is_symlink()
+            or not path.is_file()
+            or not path.resolve().is_relative_to(repo.resolve())
+        ):
+            raise ValueError("Invalid repository-owned composition source")
+        repository_files[name] = path
+    if repository_files.keys() & (base_files.keys() | overlay_files.keys()):
+        raise ValueError("Repository-owned source collides with parent or overlay")
     include = set(config["include"])
     missing = include - base_files.keys()
     if missing:
@@ -291,7 +309,8 @@ def assemble(repo: Path, config: dict[str, Any]) -> dict[str, Any]:
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(base_files[old_name], target)
         copy_files(overlay_files, staging)
-        overlay_identity = content_identity(overlay_files)
+        copy_files(repository_files, staging)
+        overlay_identity = content_identity(overlay_files | repository_files)
         config_identity = hashlib.sha256(
             (repo / "composition.toml").read_bytes()
         ).hexdigest()
@@ -342,6 +361,7 @@ def assemble(repo: Path, config: dict[str, Any]) -> dict[str, Any]:
             raise ValueError(f"Output has no ownership record: {output}")
         owners = {name: "parent" for name in include}
         owners.update({name: "overlay" for name in overlay_files})
+        owners.update({name: "repository" for name in repository_files})
         owners.update(
             {new: "retainedParent" for new in config.get("retainBase", {}).values()}
         )

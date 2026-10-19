@@ -18,3 +18,4 @@ coverage/
 .serena/
 .local/
 backups/
+.vscode/

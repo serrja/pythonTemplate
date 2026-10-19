@@ -41,6 +41,7 @@ def test_no_git_sdist_omits_private_runtime_files_and_retains_legitimate_core(
         ".agents/private.txt",
         ".codex/private.txt",
         ".serena/private.txt",
+        ".vscode/private.txt",
         ".local/private.txt",
         "backups/private.txt",
         ".env.private",

@@ -14,6 +14,13 @@ A new parent revision is deliberately refreshed into the derivative snapshot, re
 
 The composition command itself is owned by this Python base. Typer and FastAPI are sibling specializations; Pokerlost serviceTemplate derives only from FastAPI. Typer owns CLI source and CliRunner tests, while the base owns common engineering policy. A derivative's root `tools/compose_template.py`, when present, is a checked mirror of the pinned parent tool. Refresh updates that mirror only if it still matches the previous snapshot; clean rebuilds reject a divergent mirror. The specialized service invokes the tool from its pinned FastAPI snapshot.
 
+`includeRepository` publishes an explicitly listed repository-owned file into the
+assembled template without keeping another editable implementation in the overlay.
+Its bytes participate in the source identity and ownership record. Paths escaping
+the repository, symlinks and collisions with parent/overlay ownership are rejected.
+This permits one reviewed CI admission implementation to serve maintenance and
+generated services; it does not introduce a second renderer or runtime package.
+
 ## Consequences
 
 Snapshots increase repository size but make clean checkouts reproducible without a private parent at render time. The `include` and `allowOverride` lists are reviewed ownership contracts. Copier updates require actual prior and new committed source refs. Disposable repositories with real local commits verified historical Python and service updates and controlled FastAPI evolution; no working-repository release ref was created by that check.
