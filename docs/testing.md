@@ -23,7 +23,7 @@ make check
 make build
 ```
 
-Fresh renders resolve their first lock; an existing application must use its committed lock without silently updating dependencies. Every testing-enabled profile includes package-boundary tests. CLI renders also exercise command/module entry points; native renders import their installed adapter. A library or empty adapter has no generated domain behavior: import checks do not prove application correctness or native algorithm coverage.
+Fresh renders resolve their first lock; an existing application must use its committed lock without silently updating dependencies. Every testing-enabled profile includes package-boundary tests. The separate typerTemplate specialization exercises real command/module entry points; native renders import their installed adapter. A library or empty adapter has no generated domain behavior: import checks do not prove application correctness or native algorithm coverage.
 
 Generated coverage includes every module in the application's package, also when never imported. The path mapping supports both a source environment and an installed wheel. Report their executions separately and identify the tested source/artifact; do not let a checkout shadow the wheel.
 
