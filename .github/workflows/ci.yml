@@ -17,6 +17,8 @@ jobs:
         with:
           persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          # Native Copier update regressions read the retained pre-policy source.
+          fetch-depth: 0
       - uses: ./template/.github/actions/actionlint
       - uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
       - name: Restore the locked Docker toolchain and dependency graph
