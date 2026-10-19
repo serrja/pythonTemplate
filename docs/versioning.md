@@ -18,7 +18,7 @@ Python distributions use PEP 440: package `1.2.3` and tag `v1.2.3`; prerelease `
 
 An application version does not automatically change after a template update. Record the template source identity in Copier answers and derivative provenance; review answer migration, managed-file deletions, optional features, and user-owned conflicts before deciding whether a downstream release is needed.
 
-The unreleased `0.2.0.dev0` template candidate adds managed foundation tests, complete Python coverage, and a thin Make interface. Existing consumers need an explicit Copier update and may need real tests for uncovered application code before the new 100% gate passes. Application-owned tests are retained. Composition now rejects a boolean answer-schema value; schema numbers must be positive integers. The retained legacy service also sanitizes settings errors. No published tag or artifact is replaced.
+The unreleased `0.2.0.dev0` template candidate adds managed foundation tests, whole-source Python coverage reports, and a thin Make interface. Existing consumers need an explicit Copier update while numerical coverage gaps are advisory; tests, types, builds and valid fresh reports remain mandatory. Application-owned tests are retained. Composition now rejects a boolean answer-schema value; schema numbers must be positive integers. The retained legacy service also sanitizes settings errors. No published tag or artifact is replaced.
 
 Pytest now uses `importlib` mode to separate project-owned and foundation test modules. Test helpers must use fixture discovery or explicit package imports instead of depending on a prepended test directory. Invalid legacy engine URLs are sanitized before startup errors are reported.
 
