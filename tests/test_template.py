@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import io
 import os
 import shutil
 import subprocess
 import sys
 import tarfile
+import tomllib
+import zipfile
 from pathlib import Path
 
 import pytest
@@ -391,3 +394,164 @@ def test_project_and_foundation_test_names_do_not_collide(tmp_path: Path) -> Non
         "tests/foundation/test_collision.py",
         cwd=output,
     )
+
+
+@pytest.mark.parametrize("profile", ["library", "service", "native"])
+def test_explicit_mit_policy_is_packaged(tmp_path: Path, profile: str) -> None:
+    source, revision = _source(tmp_path)
+    output = tmp_path / "licensed"
+    _run(
+        *COPIER,
+        "copy",
+        "--quiet",
+        "--defaults",
+        f"--vcs-ref={revision}",
+        str(source),
+        str(output),
+        "-d",
+        "projectName=licensedSample",
+        "-d",
+        f"profile={profile}",
+        "-d",
+        "withCi=false",
+        "-d",
+        "licensePolicy=MIT",
+        "-d",
+        "licenseHolder=Example Project Owner",
+        "-d",
+        "licenseYear=2025",
+    )
+    assert (
+        "Copyright (c) 2025 Example Project Owner" in (output / "LICENSE").read_text()
+    )
+    assert (
+        "Copyright (c) 2026 serrja"
+        in (output / "LICENSES/pythonTemplate-MIT.txt").read_text()
+    )
+    assert not (output / "_meta").exists()
+    project = tomllib.loads((output / "pyproject.toml").read_text())["project"]
+    assert project["license"] == "MIT"
+    _run(
+        "uv",
+        "build",
+        "--offline",
+        "--no-build-isolation",
+        "--python",
+        sys.executable,
+        "--cache-dir",
+        str(tmp_path / "build-cache"),
+        cwd=output,
+    )
+    with zipfile.ZipFile(next((output / "dist").glob("*.whl"))) as wheel:
+        names = wheel.namelist()
+        assert any(name.endswith("licenses/LICENSE") for name in names)
+        assert any(
+            name.endswith("licenses/LICENSES/pythonTemplate-MIT.txt") for name in names
+        )
+        metadata = next(name for name in names if name.endswith(".dist-info/METADATA"))
+        assert "License-Expression: MIT" in wheel.read(metadata).decode()
+    with tarfile.open(next((output / "dist").glob("*.tar.gz"))) as sdist:
+        assert any(name.endswith("/LICENSE") for name in sdist.getnames())
+
+
+def test_default_policy_has_no_invented_owner(tmp_path: Path) -> None:
+    source, revision = _source(tmp_path)
+    output = tmp_path / "unlicensed"
+    _run(
+        *COPIER,
+        "copy",
+        "--quiet",
+        "--defaults",
+        f"--vcs-ref={revision}",
+        str(source),
+        str(output),
+        "-d",
+        "projectName=unlicensedSample",
+        "-d",
+        "profile=library",
+        "-d",
+        "withCi=false",
+    )
+    assert not (output / "LICENSE").exists()
+    assert (
+        "license"
+        not in tomllib.loads((output / "pyproject.toml").read_text())["project"]
+    )
+    assert (output / "LICENSES/pythonTemplate-MIT.txt").is_file()
+    _git(output, "init", "--quiet")
+    (output / "LICENSE").write_text("Owner terms preserved.\n")
+    _git(output, "add", ".")
+    _git(
+        output,
+        "-c",
+        "user.name=Template Test",
+        "-c",
+        "user.email=template-test@example.invalid",
+        "commit",
+        "--quiet",
+        "-m",
+        "owner",
+    )
+    marker = source / "template/PROJECT.md.jinja"
+    marker.write_text(marker.read_text() + "\nUpdated template note.\n")
+    updated = _commit(source, "update template")
+    _run(*COPIER, "update", "--quiet", "--defaults", f"--vcs-ref={updated}", cwd=output)
+    assert (output / "LICENSE").read_text() == "Owner terms preserved.\n"
+
+
+def test_license_policy_update_from_pre_policy_source(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    source.mkdir()
+    archive = subprocess.check_output(
+        [
+            "git",
+            "-C",
+            str(ROOT),
+            "archive",
+            "78fbc3798310380e18d463951c769c8b718e53df",
+            "copier.yml",
+            "template",
+        ]
+    )
+    with tarfile.open(fileobj=io.BytesIO(archive)) as bundle:
+        bundle.extractall(source, filter="data")
+    _git(source, "init", "--quiet")
+    first = _commit(source, "pre-policy source")
+    output = tmp_path / "application"
+    _run(
+        *COPIER,
+        "copy",
+        "--quiet",
+        "--defaults",
+        f"--vcs-ref={first}",
+        str(source),
+        str(output),
+        "-d",
+        "projectName=existingProject",
+        "-d",
+        "profile=library",
+        "-d",
+        "withCi=false",
+    )
+    _git(output, "init", "--quiet")
+    (output / "LICENSE").write_text("Existing owner terms.\n")
+    _git(output, "add", ".")
+    _git(
+        output,
+        "-c",
+        "user.name=Template Test",
+        "-c",
+        "user.email=template-test@example.invalid",
+        "commit",
+        "--quiet",
+        "-m",
+        "owner",
+    )
+    shutil.rmtree(source / "template")
+    shutil.copytree(ROOT / "template", source / "template")
+    shutil.copy2(ROOT / "copier.yml", source / "copier.yml")
+    updated = _commit(source, "explicit policy source")
+    _run(*COPIER, "update", "--quiet", "--defaults", f"--vcs-ref={updated}", cwd=output)
+    assert (output / "LICENSE").read_text() == "Existing owner terms.\n"
+    assert (output / "LICENSES/pythonTemplate-MIT.txt").is_file()
+    assert not _git(output, "ls-files", "-u")
