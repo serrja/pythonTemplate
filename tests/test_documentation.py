@@ -304,7 +304,9 @@ def test_default_inventory_separates_reports_forms_and_guidance(
 ) -> None:
     """Machine reports are not guides; GitHub guidance must still be checked."""
     document(tmp_path, "docs/index.md")
-    document(tmp_path, ".github/PULL_REQUEST_TEMPLATE.md", "## Summary\n\nForm.\n")
+    form = document(
+        tmp_path, ".github/PULL_REQUEST_TEMPLATE.md", "## Summary\n\nForm.\n"
+    )
     report = document(tmp_path, "coverage/summary.md", "| Metric | Coverage |\n")
     document(tmp_path, ".vscode/cache.md", "Editor cache without a heading.\n")
     guidance = document(tmp_path, ".github/docs/sdk-admission.md")
@@ -318,6 +320,7 @@ def test_default_inventory_separates_reports_forms_and_guidance(
     assert result.exit_code == 1
     assert ".github/docs/sdk-admission.md" in result.stderr
     assert "coverage/summary.md" not in result.stderr
-    result = runner.invoke(checker.app, ["--documents", str(report)])
-    assert result.exit_code == 1
-    assert "expected exactly one H1" in result.stderr
+    for explicit_document in (report, form):
+        result = runner.invoke(checker.app, ["--documents", str(explicit_document)])
+        assert result.exit_code == 1
+        assert "expected exactly one H1" in result.stderr
