@@ -14,8 +14,21 @@ REPORTER = Path(__file__).resolve().parents[1] / "template/docker/coverage_repor
 
 
 def run(tmp_path: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    # Each real fixture owns its collector; do not merge synthetic sample.py into
+    # the maintenance suite through coverage.py's subprocess auto-start environment.
+    environment = {
+        key: value
+        for key, value in os.environ.items()
+        if not key.startswith(("COVERAGE_", "COV_CORE_"))
+    }
     return subprocess.run(
-        args, cwd=tmp_path, text=True, capture_output=True, check=False, timeout=60
+        args,
+        cwd=tmp_path,
+        env=environment,
+        text=True,
+        capture_output=True,
+        check=False,
+        timeout=60,
     )
 
 

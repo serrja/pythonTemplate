@@ -75,7 +75,7 @@ jobs:
       - name: Real isolated Copier render using the canonical Docker toolchain
         run: make render RENDER_OUTPUT="$RUNNER_TEMP/rendered" RENDER_ARGS='-d projectName=example${{ matrix.variant }} -d profile=${{ matrix.profile }} -d withPersistence=${{ matrix.persistence }}'
       - name: Resolve the first lock in Docker
-        run: docker run --rm --user "$(id -u):$(id -g)" --mount "type=bind,source=$RUNNER_TEMP/rendered,target=/render" --workdir /render pythontemplate:quality uv lock
+        run: docker run --rm --env UV_CACHE_DIR=/tmp/uv --user "$(id -u):$(id -g)" --mount "type=bind,source=$RUNNER_TEMP/rendered,target=/render" --workdir /render pythontemplate:quality uv lock
       - name: Cached generated-project dependency graph
         uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
         with:
