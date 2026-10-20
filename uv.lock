@@ -820,7 +820,7 @@ wheels = [
 
 [[package]]
 name = "python-template-maintenance"
-version = "0.3.0.dev0"
+version = "0.3.0.dev1"
 source = { virtual = "." }
 
 [package.dev-dependencies]
@@ -828,6 +828,7 @@ dev = [
     { name = "copier" },
     { name = "hatchling" },
     { name = "mypy" },
+    { name = "packaging" },
     { name = "pybind11" },
     { name = "pydantic" },
     { name = "pytest" },
@@ -844,6 +845,7 @@ dev = [
     { name = "copier", specifier = "==9.17.2" },
     { name = "hatchling", specifier = ">=1.27,<2" },
     { name = "mypy", specifier = ">=2.3,<3" },
+    { name = "packaging", specifier = ">=25,<27" },
     { name = "pybind11", specifier = ">=3,<4" },
     { name = "pydantic", specifier = ">=2.12,<3" },
     { name = "pytest", specifier = ">=9,<10" },

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import io
+import json
 import os
 import shutil
 import subprocess
@@ -258,11 +259,27 @@ def test_update_preserves_owner_files_and_detects_overlap(tmp_path: Path) -> Non
         "-m",
         "initial render",
     )
+    provenance = json.loads((output / ".template-version.json").read_text())
+    assert provenance["sourceCommit"] == first
+    protected = {
+        "src/sampleproject/custom.py": "CUSTOM = True\n",
+        "settings/local.toml": "enabled = true\n",
+        "tests/test_custom.py": "def test_custom():\n    assert True\n",
+        "migrations/versions/owner_revision.py": "revision = 'owner_revision'\n",
+    }
+    for name, content in protected.items():
+        path = output / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content)
+    metadata_path = output / "pyproject.toml"
+    metadata_path.write_text(
+        metadata_path.read_text().replace('version = "0.1.0"', 'version = "0.8.2"')
+    )
     owner = output / "PROJECT.md"
     owner.write_text(owner.read_text() + "\nOwner note is retained.\n")
     local_make = output / "Makefile.local"
     local_make.write_text("owner-check:\n\t@printf '%s\\n' owner-command\n")
-    _git(output, "add", "PROJECT.md", "Makefile.local")
+    _git(output, "add", ".")
     _git(
         output,
         "-c",
@@ -279,6 +296,13 @@ def test_update_preserves_owner_files_and_detects_overlap(tmp_path: Path) -> Non
     readme.write_text(readme.read_text() + "\nUpdated source marker.\n")
     second = _commit(source, "update managed README")
     _run(*COPIER, "update", "--quiet", "--defaults", f"--vcs-ref={second}", cwd=output)
+    assert (
+        json.loads((output / ".template-version.json").read_text())["sourceCommit"]
+        == second
+    )
+    for name, content in protected.items():
+        assert (output / name).read_text() == content
+    assert tomllib.loads(metadata_path.read_text())["project"]["version"] == "0.8.2"
     assert "Owner note is retained." in owner.read_text()
     assert "Updated source marker." in (output / "README.md").read_text()
     assert (
@@ -565,3 +589,29 @@ def test_license_policy_update_from_pre_policy_source(tmp_path: Path) -> None:
     assert (output / "LICENSE").read_text() == "Existing owner terms.\n"
     assert (output / "LICENSES/pythonTemplate-MIT.txt").is_file()
     assert not _git(output, "ls-files", "-u")
+
+
+@pytest.mark.parametrize("name", ["class", "import", "async"])
+def test_python_keyword_package_is_rejected(tmp_path: Path, name: str) -> None:
+    source, revision = _source(tmp_path)
+    result = subprocess.run(
+        [
+            *COPIER,
+            "copy",
+            "--quiet",
+            "--defaults",
+            f"--vcs-ref={revision}",
+            str(source),
+            str(tmp_path / "invalid"),
+            "-d",
+            f"projectName={name}",
+            "-d",
+            "profile=library",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode != 0
+    assert "Python keyword" in result.stderr
+    assert not (tmp_path / "invalid/src").exists()

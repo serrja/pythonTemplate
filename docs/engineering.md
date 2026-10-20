@@ -67,3 +67,25 @@ native alias. Local imports within a directory remain valid. Python enforces the
 boundary with Ruff TID252 (`parents`); do not change external or historical vendored
 sources to satisfy an owned-source rule. Validate executable and installed imports
 outside the checkout, not only the editor's path resolution.
+
+
+## Local evidence and portable updates
+
+`make ci-local` runs the native checks, coverage report, source bundle build,
+artifact verification and release metadata check once. Results are ignored under
+`coverage/`; `ci-local.json` records source commit, dirty state, content identity,
+commands, tool versions and artifact checksums. Coverage below 100% is advisory.
+`make version` reads `pyproject.toml`; `make release-check` never publishes.
+
+`OFFLINE=1 make ci-local` requires the prepared quality image for exactly the same
+source bytes. Missing or changed inputs are blocked. Template bundle operations
+need no additional inputs after that preflight. A downstream runtime project must
+configure `OFFLINE_PREFLIGHT_COMMAND` for its own cached artifact and acceptance
+inputs; the portable default refuses to assume they are available.
+
+Use `tools/compose_template.py --repo <owner> --sync-engineering <consumer>` with
+one explicit `--managed-path` per selected portable file. The native updater
+checks existing hashes before writing, refuses local edits and requires a clean
+owner commit for downstream copies. Each changed manifest entry pins its source
+revision; untouched entries keep their historical provenance. The updater does
+not copy project Makefiles or change local commands, rules, access or settings.
