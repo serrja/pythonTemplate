@@ -16,7 +16,7 @@
     },
     "docker/quality.mk": {
       "source": "template/docker/quality.mk",
-      "sha256": "5da1c65ef9610cb28bf0652e908ec785c2cb37d677d1995856c28a292785eb85",
+      "sha256": "2d84bce3b5425d78778ef45ebb49d49d64a5932833eb2ced170617663fddae40",
       "revision": null
     },
     "docker/quality-python.mk": {
@@ -39,7 +39,7 @@
     },
     "docker/release.py": {
       "source": "template/docker/release.py",
-      "sha256": "2362df1b29d3a3f458d4adbaf6f1baeed7f93ca0f63959cc036f19763fead02e",
+      "sha256": "58b6be3339bc8174d0a1adeacd93abe605506410881aee1a959511575df1dfd7",
       "revision": null
     }
   },

@@ -37,11 +37,18 @@ def source_file(root: Path, character: str = "a") -> None:
     )
 
 
+def plan_file(root: Path, checks: list[str], scope: str = "full") -> None:
+    (root / "coverage/ci-plan.json").write_text(
+        json.dumps({"scope": scope, "checks": checks})
+    )
+
+
 def test_receipt_checks_and_stale_source(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, release: ModuleType
 ) -> None:
     monkeypatch.chdir(tmp_path)
     source_file(tmp_path)
+    plan_file(tmp_path, ["check"])
     runner = CliRunner()
     assert runner.invoke(release.app, ["receipt", "init"]).exit_code == 0
     args = [
@@ -71,6 +78,7 @@ def test_receipt_failure_is_not_relabelled_passed(
 ) -> None:
     monkeypatch.chdir(tmp_path)
     source_file(tmp_path)
+    plan_file(tmp_path, ["test"])
     runner = CliRunner()
     assert runner.invoke(release.app, ["receipt", "init"]).exit_code == 0
     assert (
@@ -272,3 +280,159 @@ def test_explicit_bundle_name_and_ignored_files(
     )
     with tarfile.open(tmp_path / "dist/docs-fixture-0.2.1.tar.gz") as archive:
         assert archive.getnames() == ["README.md", "VERSION"]
+
+
+@pytest.mark.parametrize("scope", ["full", "scoped"])
+@pytest.mark.parametrize("complete", [True, False])
+def test_receipt_requires_the_complete_ordered_plan(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    release: ModuleType,
+    scope: str,
+    complete: bool,
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    source_file(tmp_path)
+    plan_file(tmp_path, ["check", "coverage"], scope)
+    runner = CliRunner()
+    assert runner.invoke(release.app, ["receipt", "init"]).exit_code == 0
+    for name in ["check", "coverage"] if complete else ["check"]:
+        assert (
+            runner.invoke(
+                release.app,
+                [
+                    "receipt",
+                    "record",
+                    "--name",
+                    name,
+                    "--command",
+                    "make " + name,
+                    "--exit-code",
+                    "0",
+                ],
+            ).exit_code
+            == 0
+        )
+    result = runner.invoke(release.app, ["receipt", "finish", "--status", "passed"])
+    assert (result.exit_code == 0) is complete
+    receipt = json.loads((tmp_path / "coverage/ci-local.json").read_text())
+    assert receipt["scope"] == scope
+    assert receipt["plannedChecks"] == ["check", "coverage"]
+    assert (receipt["status"] == "passed") is complete
+    assert (
+        f"scope: **{scope}**" in (tmp_path / "coverage/ci-local-summary.md").read_text()
+    )
+
+
+@pytest.mark.parametrize(
+    "name,code", [("coverage", 0), ("unplanned", 0), ("check", -1), ("check", 256)]
+)
+def test_receipt_refuses_unplanned_order_and_invalid_codes(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    release: ModuleType,
+    name: str,
+    code: int,
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    source_file(tmp_path)
+    plan_file(tmp_path, ["check", "coverage"])
+    runner = CliRunner()
+    assert runner.invoke(release.app, ["receipt", "init"]).exit_code == 0
+    assert (
+        runner.invoke(
+            release.app,
+            [
+                "receipt",
+                "record",
+                "--name",
+                name,
+                "--command",
+                "make " + name,
+                "--exit-code",
+                str(code),
+            ],
+        ).exit_code
+        != 0
+    )
+
+
+@pytest.mark.parametrize(
+    "checks", [[], ["check", "check"], ["offline-preflight"], ["bad target"]]
+)
+def test_receipt_refuses_invalid_plan(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    release: ModuleType,
+    checks: list[str],
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    source_file(tmp_path)
+    plan_file(tmp_path, checks)
+    assert CliRunner().invoke(release.app, ["receipt", "init"]).exit_code != 0
+
+
+def test_receipt_offline_preflight_and_plan_change(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, release: ModuleType
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    source_file(tmp_path)
+    plan_file(tmp_path, ["check"])
+    runner = CliRunner()
+    assert runner.invoke(release.app, ["receipt", "init"]).exit_code == 0
+    for name in ["offline-preflight", "check"]:
+        assert (
+            runner.invoke(
+                release.app,
+                [
+                    "receipt",
+                    "record",
+                    "--name",
+                    name,
+                    "--command",
+                    "make " + name,
+                    "--exit-code",
+                    "0",
+                ],
+            ).exit_code
+            == 0
+        )
+    assert (
+        runner.invoke(
+            release.app, ["receipt", "finish", "--status", "passed"]
+        ).exit_code
+        == 0
+    )
+    assert runner.invoke(release.app, ["receipt", "init"]).exit_code == 0
+    plan_file(tmp_path, ["coverage"])
+    assert (
+        runner.invoke(
+            release.app, ["receipt", "finish", "--status", "passed"]
+        ).exit_code
+        != 0
+    )
+
+
+@pytest.mark.parametrize("override", [False, True])
+def test_make_plan_marks_explicit_subsets_scoped(
+    tmp_path: Path, override: bool
+) -> None:
+    docker = tmp_path / "docker"
+    docker.mkdir()
+    (docker / "source_identity.sh").write_bytes(
+        (ROOT / "template/docker/source_identity.sh").read_bytes()
+    )
+    (tmp_path / "Makefile").write_text(
+        f"DOCKER := false\ninclude {ROOT}/template/docker/quality.mk\n"
+    )
+    command = ["make", "ci-local"]
+    if override:
+        command.append("CI_LOCAL_TARGETS=check coverage")
+    assert subprocess.run(command, cwd=tmp_path, capture_output=True).returncode != 0
+    plan = json.loads((tmp_path / "coverage/ci-plan.json").read_text())
+    assert plan["scope"] == ("scoped" if override else "full")
+    assert plan["checks"] == (
+        ["check", "coverage"]
+        if override
+        else ["check", "coverage", "build", "verify", "release-check"]
+    )
