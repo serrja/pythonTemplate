@@ -820,7 +820,7 @@ wheels = [
 
 [[package]]
 name = "python-template-maintenance"
-version = "0.3.0.dev0"
+version = "0.3.0.dev1"
 source = { virtual = "." }
 
 [package.dev-dependencies]

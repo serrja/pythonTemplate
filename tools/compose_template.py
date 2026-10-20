@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Annotated, Any
 
 import typer
+from packaging.version import Version
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 app = typer.Typer(
@@ -32,7 +33,6 @@ IGNORED_PARTS = {
     ".ruff_cache",
     ".pytest_cache",
 }
-BASE_TEMPLATE_VERSION = "0.3.0.dev0"
 BASE_ANSWERS_SCHEMA = 1
 
 
@@ -40,7 +40,6 @@ class CompositionConfig(BaseModel):
     """Closed, versioned input schema; filesystem authorization remains separate."""
 
     model_config = ConfigDict(extra="forbid", hide_input_in_errors=True)
-    template_version: str = Field(alias="templateVersion", min_length=1)
     answers_schema: Annotated[int, Field(strict=True, gt=0)] = Field(
         alias="answersSchema"
     )
@@ -100,14 +99,32 @@ def load_config(repo: Path) -> dict[str, Any]:
         ) from None
 
 
+def template_version(repo: Path) -> str:
+    """Maintenance project metadata is the sole template version source."""
+    metadata = tomllib.loads((repo / "pyproject.toml").read_text())
+    return str(Version(metadata["project"]["version"]))
+
+
+def write_render_provenance(output: Path, version: str) -> None:
+    """Copier supplies its supported exact VCS hash and selected ref at render."""
+    content = (
+        '{\n  "templateVersion": ' + json.dumps(version) + ",\n"
+        '  "sourceCommit": {{ _copier_conf.vcs_ref_hash'
+        " | default(none, true) | tojson }},\n"
+        '  "sourceRef": {{ _copier_answers.get("_commit") | tojson }}\n}\n'
+    )
+    (output / ".template-version.json.jinja").write_text(content)
+
+
 def stamp_base(repo: Path) -> str:
     """Stamp the direct Python Copier source without hashing the stamp itself."""
     files = {
         f"template/{name}": path
         for name, path in source_files(repo / "template").items()
-        if name != ".template-source.json"
+        if name not in {".template-source.json", ".template-version.json.jinja"}
     }
     files["copier.yml"] = repo / "copier.yml"
+    files["pyproject.toml"] = repo / "pyproject.toml"
     files["tools/compose_template.py"] = repo / "tools/compose_template.py"
     shared_tests = repo / "tools/test_composition.py"
     if shared_tests.is_file():
@@ -117,7 +134,7 @@ def stamp_base(repo: Path) -> str:
         json.dumps(
             {
                 "sourceContentSha256": identity,
-                "templateVersion": BASE_TEMPLATE_VERSION,
+                "templateVersion": template_version(repo),
                 "answersSchema": BASE_ANSWERS_SCHEMA,
                 "publication": (
                     "local worktree; release status must be checked separately"
@@ -128,6 +145,7 @@ def stamp_base(repo: Path) -> str:
         )
         + "\n"
     )
+    write_render_provenance(repo / "template", template_version(repo))
     return identity
 
 
@@ -241,7 +259,7 @@ def refresh_snapshot(repo: Path, base: Path, snapshot: Path) -> None:
 
 def assemble(repo: Path, config: dict[str, Any]) -> dict[str, Any]:
     validated = CompositionConfig.model_validate(config)
-    template_version = validated.template_version
+    version = template_version(repo)
     answers_schema = validated.answers_schema
     snapshot = repo / config["snapshot"]
     for name in ("compose_template.py", "test_composition.py"):
@@ -317,13 +335,13 @@ def assemble(repo: Path, config: dict[str, Any]) -> dict[str, Any]:
             (repo / "copier.yml").read_bytes()
         ).hexdigest()
         source_identity = hashlib.sha256(
-            f"{snapshot_identity}:{overlay_identity}:{config_identity}:{copier_config_identity}".encode()
+            f"{snapshot_identity}:{overlay_identity}:{config_identity}:{copier_config_identity}:{version}".encode()
         ).hexdigest()
         (staging / ".template-source.json").write_text(
             json.dumps(
                 {
                     "sourceContentSha256": source_identity,
-                    "templateVersion": template_version,
+                    "templateVersion": version,
                     "answersSchema": answers_schema,
                     "parentContentSha256": snapshot_identity,
                     "overlayContentSha256": overlay_identity,
@@ -338,6 +356,7 @@ def assemble(repo: Path, config: dict[str, Any]) -> dict[str, Any]:
             )
             + "\n"
         )
+        write_render_provenance(staging, version)
         new_files = source_files(staging)
         previous_record_path = repo / "composition.lock.json"
         if output.exists() and previous_record_path.exists():
@@ -365,8 +384,9 @@ def assemble(repo: Path, config: dict[str, Any]) -> dict[str, Any]:
             {new: "retainedParent" for new in config.get("retainBase", {}).values()}
         )
         owners[".template-source.json"] = "compositor"
+        owners[".template-version.json.jinja"] = "compositor"
         record = {
-            "templateVersion": template_version,
+            "templateVersion": version,
             "answersSchema": answers_schema,
             "parentContentSha256": snapshot_identity,
             "overlayContentSha256": overlay_identity,
