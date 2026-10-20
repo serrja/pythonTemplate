@@ -215,6 +215,16 @@ def test_render_profiles(tmp_path: Path, profile: str, persistence: bool) -> Non
     assert (package / "persistence.py").exists() is persistence
     assert (output / "migrations/env.py").exists() is persistence
     assert (output / "native/core.cpp").exists() is (profile == "native")
+    targets = _run(
+        "make",
+        "--silent",
+        "--no-print-directory",
+        "quality-targets",
+        '--eval=quality-targets:;@printf "%s\\n" "$(QUALITY_EXTRA_TARGETS)"',
+        cwd=output,
+    ).split()
+    for target in targets:
+        _run("make", "--dry-run", "CONTAINERIZED=1", target, cwd=output)
 
 
 def test_update_preserves_owner_files_and_detects_overlap(tmp_path: Path) -> None:
