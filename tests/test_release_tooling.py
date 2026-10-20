@@ -481,3 +481,124 @@ def test_receipt_release_gate_requires_valid_artifacts(
         json.loads((tmp_path / "coverage/ci-local.json").read_text())["status"]
         == "failed"
     )
+
+
+def test_scoped_checks_do_not_claim_old_artifacts_or_versions(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, release: ModuleType
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    source_file(tmp_path)
+    plan_file(tmp_path, ["check"], "scoped")
+    (tmp_path / "coverage/artifacts.json").write_text("old invalid artifact data")
+    (tmp_path / "coverage/versions.json").write_text("old invalid version data")
+    runner = CliRunner()
+    assert runner.invoke(release.app, ["receipt", "init"]).exit_code == 0
+    assert (
+        runner.invoke(
+            release.app,
+            [
+                "receipt",
+                "record",
+                "--name",
+                "check",
+                "--command",
+                "make check",
+                "--exit-code",
+                "0",
+            ],
+        ).exit_code
+        == 0
+    )
+    assert (
+        runner.invoke(
+            release.app, ["receipt", "finish", "--status", "passed"]
+        ).exit_code
+        == 0
+    )
+    receipt = json.loads((tmp_path / "coverage/ci-local.json").read_text())
+    assert (
+        receipt["scope"] == "scoped"
+        and receipt["artifacts"] == []
+        and receipt["versions"] == {}
+    )
+
+
+@pytest.mark.parametrize("broken", ["source", "ci-plan", "ci-local"])
+def test_corrupt_receipt_inputs_cannot_pass(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, release: ModuleType, broken: str
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    source_file(tmp_path)
+    plan_file(tmp_path, ["check"])
+    runner = CliRunner()
+    assert runner.invoke(release.app, ["receipt", "init"]).exit_code == 0
+    (tmp_path / f"coverage/{broken}.json").write_text("not json")
+    assert (
+        runner.invoke(
+            release.app, ["receipt", "finish", "--status", "passed"]
+        ).exit_code
+        != 0
+    )
+    if broken != "ci-local":
+        assert (
+            json.loads((tmp_path / "coverage/ci-local.json").read_text())["status"]
+            == "failed"
+        )
+
+
+def test_invalid_terminal_status_cannot_relabel_receipt(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, release: ModuleType
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    source_file(tmp_path)
+    plan_file(tmp_path, ["check"])
+    runner = CliRunner()
+    assert runner.invoke(release.app, ["receipt", "init"]).exit_code == 0
+    assert (
+        runner.invoke(
+            release.app, ["receipt", "finish", "--status", "success"]
+        ).exit_code
+        != 0
+    )
+    assert (
+        json.loads((tmp_path / "coverage/ci-local.json").read_text())["status"]
+        == "running"
+    )
+
+
+@pytest.mark.parametrize("inventory", ["null", "42", "{}"])
+def test_nonlist_artifact_inventory_leaves_failed_receipt(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, release: ModuleType, inventory: str
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    source_file(tmp_path)
+    plan_file(tmp_path, ["release-check"])
+    (tmp_path / "coverage/artifacts.json").write_text(inventory)
+    runner = CliRunner()
+    assert runner.invoke(release.app, ["receipt", "init"]).exit_code == 0
+    assert (
+        runner.invoke(
+            release.app,
+            [
+                "receipt",
+                "record",
+                "--name",
+                "release-check",
+                "--command",
+                "make release-check",
+                "--exit-code",
+                "0",
+            ],
+        ).exit_code
+        == 0
+    )
+    assert (
+        runner.invoke(
+            release.app, ["receipt", "finish", "--status", "passed"]
+        ).exit_code
+        != 0
+    )
+    assert (
+        json.loads((tmp_path / "coverage/ci-local.json").read_text())["status"]
+        == "failed"
+    )
