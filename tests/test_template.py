@@ -617,7 +617,7 @@ def test_python_keyword_package_is_rejected(tmp_path: Path, name: str) -> None:
     assert not (tmp_path / "invalid/src").exists()
 
 
-@pytest.mark.parametrize("missing", ["receipt", "image", "source"])
+@pytest.mark.parametrize("missing", ["receipt", "image", "source", "release"])
 def test_generated_offline_preflight_refuses_unprepared_acceptance(
     tmp_path: Path, missing: str
 ) -> None:
@@ -651,13 +651,18 @@ def test_generated_offline_preflight_refuses_unprepared_acceptance(
         (reports / "installed").mkdir(parents=True)
         (reports / "installed/test-image-id.txt").write_text("expected-image\n")
         (reports / "source.json").write_text('{"contentSha256":"aaaa"}\n')
-        (reports / "installed/source.json").write_text('{"contentSha256":"bbbb"}\n')
+        (reports / "installed/source.json").write_text(
+            '{"contentSha256":"aaaa"}\n'
+            if missing == "release"
+            else '{"contentSha256":"bbbb"}\n'
+        )
     result = subprocess.run(
         [
             "make",
             "CONTAINERIZED=0",
             "OFFLINE=1",
             f"DOCKER={docker}",
+            "RELEASE_CHECK_COMMAND=printf project-release-hook; exit 7",
             "python-offline-preflight",
         ],
         cwd=output,
@@ -667,5 +672,8 @@ def test_generated_offline_preflight_refuses_unprepared_acceptance(
         timeout=30,
     )
     assert result.returncode != 0
-    assert "BLOCKED:" in result.stderr
-    assert "release-check" not in result.stdout
+    if missing == "release":
+        assert "project-release-hook" in result.stdout
+    else:
+        assert "BLOCKED:" in result.stderr
+        assert "project-release-hook" not in result.stdout
