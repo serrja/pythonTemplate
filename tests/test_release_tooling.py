@@ -436,3 +436,48 @@ def test_make_plan_marks_explicit_subsets_scoped(
         if override
         else ["check", "coverage", "build", "verify", "release-check"]
     )
+
+
+@pytest.mark.parametrize(
+    "inventory",
+    [None, [], [{"path": "dist/demo.txt", "sha256": "bad", "version": "0.1.0"}]],
+)
+def test_receipt_release_gate_requires_valid_artifacts(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    release: ModuleType,
+    inventory: list[dict[str, str]] | None,
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    source_file(tmp_path)
+    plan_file(tmp_path, ["release-check"])
+    if inventory is not None:
+        (tmp_path / "coverage/artifacts.json").write_text(json.dumps(inventory))
+    runner = CliRunner()
+    assert runner.invoke(release.app, ["receipt", "init"]).exit_code == 0
+    assert (
+        runner.invoke(
+            release.app,
+            [
+                "receipt",
+                "record",
+                "--name",
+                "release-check",
+                "--command",
+                "make release-check",
+                "--exit-code",
+                "0",
+            ],
+        ).exit_code
+        == 0
+    )
+    assert (
+        runner.invoke(
+            release.app, ["receipt", "finish", "--status", "passed"]
+        ).exit_code
+        != 0
+    )
+    assert (
+        json.loads((tmp_path / "coverage/ci-local.json").read_text())["status"]
+        == "failed"
+    )

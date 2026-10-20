@@ -39,7 +39,7 @@
     },
     "docker/release.py": {
       "source": "template/docker/release.py",
-      "sha256": "58b6be3339bc8174d0a1adeacd93abe605506410881aee1a959511575df1dfd7",
+      "sha256": "dfe461f3c144c9180967f057c18b2eca65e41f08f39b2780cdec69f388c53629",
       "revision": null
     }
   },

@@ -240,6 +240,14 @@ def receipt_finish(status: Annotated[Status, typer.Option()]) -> None:
                 "A failed, skipped or missing planned check cannot become PASS"
             )
         value.artifacts = checked_artifacts()
+        if (
+            status == Status.passed
+            and "release-check" in value.planned_checks
+            and not value.artifacts
+        ):
+            raise ValueError(
+                "Release verification requires a nonempty current artifact inventory"
+            )
         versions = REPORTS / "versions.json"
         if versions.is_file():
             value.versions = json.loads(versions.read_text())
