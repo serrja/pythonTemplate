@@ -16,11 +16,13 @@
     },
     "docker/quality.mk": {
       "source": "template/docker/quality.mk",
-      "sha256": "881cd3677effdf37503bd4c1980c0ce11403a6306bb8cdb2974779ff601fa6a4"
+      "sha256": "5da1c65ef9610cb28bf0652e908ec785c2cb37d677d1995856c28a292785eb85",
+      "revision": null
     },
     "docker/quality-python.mk": {
       "source": "template/docker/quality-python.mk",
-      "sha256": "65cc6b6a47ebead0dc56466f88fbc507d61556119f7c38de2ef61f6a6f449224"
+      "sha256": "7a035479394a82b085e67f986a237c964e085022594678d2bba490529e18d655",
+      "revision": null
     },
     "docker/coverage_report.py": {
       "source": "template/docker/coverage_report.py",
@@ -29,6 +31,16 @@
     ".github/workflows/contribution.yml": {
       "source": "template/.github/workflows/contribution.yml",
       "sha256": "5ffc172c7c0881ae18e7243ee718dcc2693922f4864cafd73ab895054e30d272"
+    },
+    "docker/source_identity.sh": {
+      "source": "template/docker/source_identity.sh",
+      "sha256": "efe087bf133fc2c4c9a02ee4a3935e77d4a39ded3b14387c3dde0d90ef25ecc7",
+      "revision": null
+    },
+    "docker/release.py": {
+      "source": "template/docker/release.py",
+      "sha256": "2362df1b29d3a3f458d4adbaf6f1baeed7f93ca0f63959cc036f19763fead02e",
+      "revision": null
     }
   },
   "rules": {

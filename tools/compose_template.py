@@ -410,15 +410,127 @@ def smoke_copier(repo: Path, answers: dict[str, Any]) -> None:
         subprocess.run([*command, str(repo), str(destination)], check=True)
 
 
+def sync_engineering(repo: Path, target: Path, paths: list[str]) -> None:
+    """Update an explicit reviewed subset, preserving locally edited snapshots."""
+    allowed = {
+        name: "template/" + name
+        for name in (
+            "docker/quality.mk",
+            "docker/quality-python.mk",
+            "docker/coverage_report.py",
+            "docker/source_identity.sh",
+            "docker/release.py",
+        )
+    } | {
+        name: name
+        for name in (
+            "docker/documentation-requirements.in",
+            "docker/documentation-requirements.lock",
+        )
+    }
+    if not paths or len(set(paths)) != len(paths) or not set(paths) <= allowed.keys():
+        raise ValueError("Choose a unique explicit portable engineering subset")
+    manifest_path = target / ".github/engineering-source.json"
+    if manifest_path.is_symlink() or not manifest_path.resolve().is_relative_to(target):
+        raise ValueError("Engineering manifest escapes target")
+    if manifest_path.exists():
+        record = json.loads(manifest_path.read_text())
+        if record.get("repository") != "https://github.com/serrja/pythonTemplate":
+            raise ValueError("Engineering source owner differs")
+    else:
+        record = {"repository": "https://github.com/serrja/pythonTemplate", "files": {}}
+    replacements: dict[str, Path] = {}
+    for name in paths:
+        destination = target / name
+        source = repo / allowed[name]
+        if (
+            destination.is_symlink()
+            or not destination.resolve().is_relative_to(target)
+            or source.is_symlink()
+            or not source.is_file()
+        ):
+            raise ValueError("Unsafe portable engineering source/destination")
+        previous = record["files"].get(name)
+        if destination.exists() and not previous and source != destination:
+            pinned = record.get("revision")
+            if (
+                not isinstance(pinned, str)
+                or len(pinned) != 40
+                or any(c not in "0123456789abcdef" for c in pinned)
+            ):
+                raise ValueError("Existing unmanaged file has no trusted source pin")
+            old = subprocess.run(
+                ["git", "show", f"{pinned}:{allowed[name]}"],
+                cwd=repo,
+                capture_output=True,
+                check=False,
+            )
+            if old.returncode != 0 or old.stdout != destination.read_bytes():
+                raise ValueError("Existing unmanaged file differs from pinned owner")
+        if (
+            destination.exists()
+            and previous
+            and (
+                previous["source"] != allowed[name]
+                or hashlib.sha256(destination.read_bytes()).hexdigest()
+                != previous["sha256"]
+            )
+        ):
+            raise ValueError("Managed engineering file has unreviewed local edits")
+        replacements[name] = source
+    head = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+    dirty = subprocess.run(
+        ["git", "status", "--porcelain=v1"],
+        cwd=repo,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+    if target != repo and dirty:
+        raise ValueError("Publish a clean source commit before downstream propagation")
+    # Validate every path first. The retained manifest pins each file separately,
+    # because subset updates must not misattribute unselected historical snapshots.
+    for name, source in replacements.items():
+        destination = target / name
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        if source != destination:
+            shutil.copy2(source, destination)
+        record["files"][name] = {
+            "source": allowed[name],
+            "sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+            "revision": None if target == repo else head,
+        }
+    if target == repo:
+        record["revision"] = None
+    else:
+        record.setdefault("revision", head)
+        record["latestUpdateRevision"] = head
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    manifest_path.write_text(json.dumps(record, indent=2) + "\n")
+
+
 @app.command(name="compose")
 def compose(
     repo: Annotated[Path, typer.Option("--repo")] = Path("."),
     refresh_base: Annotated[Path | None, typer.Option("--refresh-base")] = None,
     smoke: Annotated[bool, typer.Option("--smoke")] = False,
     stamp: Annotated[bool, typer.Option("--stamp-base")] = False,
+    sync_target: Annotated[Path | None, typer.Option("--sync-engineering")] = None,
+    managed_path: Annotated[list[str] | None, typer.Option("--managed-path")] = None,
 ) -> None:
     """Materialize or explicitly refresh the declared source composition."""
     repo = repo.resolve()
+    if sync_target is not None:
+        sync_engineering(repo, sync_target.resolve(), managed_path or [])
+        return
+    if managed_path:
+        raise typer.BadParameter("--managed-path requires --sync-engineering")
     if stamp:
         print(f"pythonTemplate={stamp_base(repo)}")
         return

@@ -440,3 +440,43 @@ def test_repository_source_collision_is_rejected(
     config["includeRepository"] = ["base.txt"]
     with pytest.raises(ValueError, match="collides"):
         composer.assemble(root, config)
+
+
+def test_engineering_subset_adoption_and_local_edit_protection(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "owner"
+    write(root / "template/docker/quality.mk", "first\n")
+    write(root / "template/docker/source_identity.sh", "source\n")
+    git(root, "init", "--quiet")
+    git(root, "add", ".")
+    git(
+        root,
+        "-c",
+        "user.name=Fixture",
+        "-c",
+        "user.email=fixture@example.invalid",
+        "commit",
+        "--quiet",
+        "-m",
+        "source",
+    )
+    target = tmp_path / "consumer"
+    target.mkdir()
+    composer.sync_engineering(root, target, ["docker/quality.mk"])
+    record = json.loads((target / ".github/engineering-source.json").read_text())
+    assert record["files"]["docker/quality.mk"]["revision"] == git(
+        root, "rev-parse", "HEAD"
+    )
+    write(target / "docker/quality.mk", "owner edit\n")
+    with pytest.raises(ValueError, match="unreviewed local edits"):
+        composer.sync_engineering(
+            root, target, ["docker/source_identity.sh", "docker/quality.mk"]
+        )
+    assert not (target / "docker/source_identity.sh").exists()
+    assert (target / "docker/quality.mk").read_text() == "owner edit\n"
+    with pytest.raises(ValueError, match="explicit portable"):
+        composer.sync_engineering(root, target, ["../outside"])
+    write(root / "template/docker/quality.mk", "uncommitted\n")
+    with pytest.raises(ValueError, match="clean source commit"):
+        composer.sync_engineering(root, target, ["docker/source_identity.sh"])
