@@ -615,3 +615,57 @@ def test_python_keyword_package_is_rejected(tmp_path: Path, name: str) -> None:
     assert result.returncode != 0
     assert "Python keyword" in result.stderr
     assert not (tmp_path / "invalid/src").exists()
+
+
+@pytest.mark.parametrize("missing", ["receipt", "image", "source"])
+def test_generated_offline_preflight_refuses_unprepared_acceptance(
+    tmp_path: Path, missing: str
+) -> None:
+    """Native Make rejects absent/stale inputs before a build or test can run."""
+    source, revision = _source(tmp_path)
+    output = tmp_path / "application"
+    _run(
+        *COPIER,
+        "copy",
+        "--quiet",
+        "--defaults",
+        f"--vcs-ref={revision}",
+        str(source),
+        str(output),
+        "-d",
+        "projectName=offlineFixture",
+        "-d",
+        "profile=library",
+        "-d",
+        "withCi=false",
+    )
+    docker = tmp_path / "docker"
+    docker.write_text(
+        "#!/bin/sh\n"
+        'test "$1 $2" = "image inspect" || exit 99\n'
+        f"printf '%s\\n' {'other-image' if missing == 'image' else 'expected-image'}\n"
+    )
+    docker.chmod(0o755)
+    if missing != "receipt":
+        reports = output / "coverage"
+        (reports / "installed").mkdir(parents=True)
+        (reports / "installed/test-image-id.txt").write_text("expected-image\n")
+        (reports / "source.json").write_text('{"contentSha256":"aaaa"}\n')
+        (reports / "installed/source.json").write_text('{"contentSha256":"bbbb"}\n')
+    result = subprocess.run(
+        [
+            "make",
+            "CONTAINERIZED=0",
+            "OFFLINE=1",
+            f"DOCKER={docker}",
+            "python-offline-preflight",
+        ],
+        cwd=output,
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=30,
+    )
+    assert result.returncode != 0
+    assert "BLOCKED:" in result.stderr
+    assert "release-check" not in result.stdout

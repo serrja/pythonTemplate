@@ -2,6 +2,11 @@
 
 Notable source and tooling changes are recorded below.
 
+## 0.3.0.dev2
+
+Generated offline CI validates prepared artifacts and installed-image identity, then reruns tests without dependency or image builds. Missing or changed inputs remain blocked. Application versions and runtime contracts are unchanged.
+
+
 ## 0.3.0.dev1
 
 Compatible tooling prerelease: add source-bound local CI receipts, native version
