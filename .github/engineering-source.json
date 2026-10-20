@@ -21,7 +21,7 @@
     },
     "docker/quality-python.mk": {
       "source": "template/docker/quality-python.mk",
-      "sha256": "7a035479394a82b085e67f986a237c964e085022594678d2bba490529e18d655",
+      "sha256": "afaa03ffed1fff8462c9b9d5d86ee13625d49c82d65c303c42a24a09a6ac2d8a",
       "revision": null
     },
     "docker/coverage_report.py": {
