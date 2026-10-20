@@ -39,8 +39,8 @@ pythonTemplate
 └── fastApiTemplate → serviceTemplate → independent installed service
 ```
 
-This source is private; the linked repositories may require authorization. No
-public distribution license has been selected. Generated foundation checks cover
+This source is private; the linked repositories may require authorization.
+Generated foundation checks cover
 packaging and tooling; application behavior needs project-owned tests.
 
 ## 📄 License
