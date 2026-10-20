@@ -589,3 +589,29 @@ def test_license_policy_update_from_pre_policy_source(tmp_path: Path) -> None:
     assert (output / "LICENSE").read_text() == "Existing owner terms.\n"
     assert (output / "LICENSES/pythonTemplate-MIT.txt").is_file()
     assert not _git(output, "ls-files", "-u")
+
+
+@pytest.mark.parametrize("name", ["class", "import", "async"])
+def test_python_keyword_package_is_rejected(tmp_path: Path, name: str) -> None:
+    source, revision = _source(tmp_path)
+    result = subprocess.run(
+        [
+            *COPIER,
+            "copy",
+            "--quiet",
+            "--defaults",
+            f"--vcs-ref={revision}",
+            str(source),
+            str(tmp_path / "invalid"),
+            "-d",
+            f"projectName={name}",
+            "-d",
+            "profile=library",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode != 0
+    assert "Python keyword" in result.stderr
+    assert not (tmp_path / "invalid/src").exists()

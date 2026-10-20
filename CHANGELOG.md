@@ -1,5 +1,7 @@
 # Changelog
 
+Notable source and tooling changes are recorded below.
+
 ## 0.3.0.dev1
 
 Compatible tooling prerelease: add source-bound local CI receipts, native version
