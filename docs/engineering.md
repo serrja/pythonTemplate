@@ -24,9 +24,9 @@ the official API, then a maintained library. Add only the missing concrete step.
 | CLI parsing | Typer app, explicit command names, Annotated Argument/Option and completion | typerTemplate; real Python CLIs | Typer 0.27.3, project lock | pytest and typer.testing.CliRunner; real executable and python -m |
 | Structured data | Pydantic v2 BaseModel, Field, aliases, TypeAdapter and model validation/dump | nearest format owner; actual API/config/manifest/receipt boundaries | compatible 2.x in project lock | valid/invalid input, serialization, JSON Schema, no secret leakage |
 | Settings | Pydantic Settings BaseSettings and SettingsConfigDict | application / specialized template | compatible locked 2.x | explicit CLI > env > selected file > defaults for new CLI; preserve existing priority |
-| HTTP | FastAPI routers, Depends/Security, exception handlers and lifespan | fastApiTemplate; generic HTTP | project lock | with TestClient(app), actual OpenAPI and isolated async integration |
+| HTTP | FastAPI routers, Depends/Security, exception handlers and lifespan | fastapiTemplate; generic HTTP | project lock | with TestClient(app), actual OpenAPI and isolated async integration |
 | Pokerlost operations | FastAPI operation_id and external paths | serviceTemplate only | SDK and template immutable refs | path/verb/tag/operation identity and SDK compatibility |
-| DB migrations | Alembic ScriptDirectory and MigrationContext APIs; SQLAlchemy | fastApiTemplate capability, application schema owner | project lock; unchanged historical revisions | disposable DB upgrade, expected/current head sets, readiness |
+| DB migrations | Alembic ScriptDirectory and MigrationContext APIs; SQLAlchemy | fastapiTemplate capability, application schema owner | project lock; unchanged historical revisions | disposable DB upgrade, expected/current head sets, readiness |
 | Source generation/update | Copier plus Jinja; content-addressed composition | pythonTemplate composition tool, specialized overlays | Copier 9.17.2, composition lock, exact Git source refs | fresh render, real update, owner-file retention and conflicts |
 | Python quality | Ruff, mypy, pytest, coverage.py | Python base; domain tests stay application-owned | Ruff 0.16.4 and uv.lock | types/lint/tests fail; coverage below 100% warns; corrupt reports fail |
 | Workflow validation | actionlint and ShellCheck | shared action / workflow owner | pinned checksums and action commits | native actionlint, no custom YAML analyzer |
@@ -58,7 +58,7 @@ The dependency-free setupSystem bootstrap is a small installer/delegator; it doe
 not import Typer/Pydantic before dependencies exist. Its read-only plan/help path
 must not download. Historical Python-base CLI refs remain renderable; new CLI
 source belongs only to typerTemplate. Legacy service/native profiles remain pinned
-compatibility paths, with new HTTP development in fastApiTemplate. Existing
+compatibility paths, with new HTTP development in fastapiTemplate. Existing
 project-specific settings and tests survive updates. Python names follow PEP 8;
 Pokerlost external camelCase conventions do not change generic Python/HTTP names.
 

@@ -1,6 +1,6 @@
 # pythonTemplate
 
-`pythonTemplate` owns the common Python foundation: packaging, quality, tests and engineering conventions. The existing private repository was renamed from `serrja/projectTemplates` without changing its history. Its canonical Copier source is `git@github.com:serrja/pythonTemplate.git`. New CLI applications use [typerTemplate](https://github.com/serrja/typerTemplate); new HTTP applications use [fastApiTemplate](https://github.com/serrja/fastApiTemplate). No Pokerlost SDK, credentials, or hooks are included.
+`pythonTemplate` owns the common Python foundation: packaging, quality, tests and engineering conventions. The repository was renamed from `serrja/projectTemplates` without changing its history. Its canonical Copier source is `git@github.com:serrja/pythonTemplate.git`. New CLI applications use [typerTemplate](https://github.com/serrja/typerTemplate); new HTTP applications use [fastapiTemplate](https://github.com/serrja/fastapiTemplate). No Pokerlost SDK, credentials, or hooks are included.
 
 ## 🚀 Generate
 
@@ -17,7 +17,7 @@ uv run python -c 'import noteslibrary'
 
 The recommended profile here is `library`. Historical `cli` source remains available at full commit `9a4b58e3921b39161bf12f51a98f8b317599ba9c`; its implementation is now owned only by typerTemplate. Use its [reviewed migration path](https://github.com/serrja/typerTemplate/blob/main/docs/migration.md), not an in-place forced copy or edited answers. The `service` and `native` choices reproduce older projects; do not silently regenerate an application under a different profile. The [service migration note](docs/serviceDesign.md) and [naming policy](docs/naming.md) describe the remaining boundaries.
 
-The legacy `service` profile starts without a database. Add `-d withPersistence=true` only for an existing legacy workflow; new web foundations use `fastApiTemplate`. `withTesting=false` and `withCi=false` omit those capabilities from a specialized render.
+The legacy `service` profile starts without a database. Add `-d withPersistence=true` only for an existing legacy workflow; new web foundations use `fastapiTemplate`. `withTesting=false` and `withCi=false` omit those capabilities from a specialized render.
 
 ## 🧭 Ownership
 
@@ -36,10 +36,9 @@ The [engineering policy](docs/engineering.md) owns tool selection, versions, bou
 ```text
 pythonTemplate
 ├── typerTemplate → independent installed CLI
-└── fastApiTemplate → serviceTemplate → independent installed service
+└── fastapiTemplate → serviceTemplate → independent installed service
 ```
 
-This source is private; the linked repositories may require authorization.
 Generated foundation checks cover
 packaging and tooling; application behavior needs project-owned tests.
 
