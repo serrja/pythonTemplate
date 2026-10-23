@@ -1,6 +1,17 @@
 # Engineering and tooling policy
 
-General engineering norms come from [baseRules at the selected commit](https://github.com/serrja/baseRules/blob/730418d3cc480b4f05b88b4c8275296c4845a75a/docs/engineering.md). This Python base owns the Python tooling mechanisms below. Specializations own their
+Daily work uses `dev`: `make lint`, reviewed diff/staged paths, then an explicitly authorized
+`git push origin dev`. `make check` is lint-only; `make acceptance` and `make ci-local` retain
+manual tests/type/build acceptance. Main stays default; test is updated only by separate
+promotion. Local is an environment, not a branch. New development tags are unstable and
+annotated `development snapshot; lint-only; tests not run`. A workflow defined only in dev
+is pending default-branch activation; a dev push does not enable its manual Actions button.
+
+Template updates in this change are source-assembled and lint-only; render/update acceptance
+remains pending an explicit manual run. No generation hook installs, tests, commits or publishes.
+
+
+General engineering norms come from [baseRules at the selected commit](https://github.com/serrja/baseRules/blob/bafcb63ed94b9769a0ca098e5db4b33c55dbc1b9/docs/engineering.md). This Python base owns the Python tooling mechanisms below. Specializations own their
 boundary mechanisms; generated applications depend on installed packages, not
 template checkouts. Before writing glue, inspect existing tool features, then
 the official API, then a maintained library. Add only the missing concrete step.
