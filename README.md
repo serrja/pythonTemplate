@@ -1,6 +1,6 @@
 # pythonTemplate
 
-`pythonTemplate` owns the common Python foundation: packaging, quality, tests and engineering conventions. The existing private repository was renamed from `serrja/projectTemplates` without changing its history. Its canonical Copier source is `git@github.com:serrja/pythonTemplate.git`. New CLI applications use [typerTemplate](https://github.com/serrja/typerTemplate); new HTTP applications use [fastApiTemplate](https://github.com/serrja/fastApiTemplate). No Pokerlost SDK, credentials, or hooks are included.
+`pythonTemplate` owns the common Python foundation: packaging, quality, tests and engineering conventions. The repository was renamed from `serrja/projectTemplates` without changing its history. Its canonical Copier source is `git@github.com:serrja/pythonTemplate.git`. New CLI applications use [typerTemplate](https://github.com/serrja/typerTemplate); new HTTP applications use [fastApiTemplate](https://github.com/serrja/fastApiTemplate). No Pokerlost SDK, credentials, or hooks are included.
 
 ## 🚀 Generate
 
@@ -39,7 +39,7 @@ pythonTemplate
 └── fastApiTemplate → serviceTemplate → independent installed service
 ```
 
-This source is private; the linked repositories may require authorization.
+This source repository is public. SSH-based Copier URLs require normal GitHub SSH authentication; linked resources retain their own access requirements.
 Generated foundation checks cover
 packaging and tooling; application behavior needs project-owned tests.
 
