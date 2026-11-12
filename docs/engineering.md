@@ -87,7 +87,9 @@ Use `tools/compose_template.py --repo <owner> --sync-engineering <consumer>` wit
 one explicit `--managed-path` per selected portable file. The native updater
 checks existing hashes before writing, refuses local edits and requires a clean
 owner commit for downstream copies. Each changed manifest entry pins its source
-revision; untouched entries keep their historical provenance. The updater does
-not copy project Makefiles or change local commands, rules, access or settings.
+revision; untouched entries keep their historical provenance. The updater changes only those reviewed paths; it does not copy project Makefiles,
+project-owned settings or policy pins. The selected
+`.github/workflows/contribution.yml` validates branch routes using event metadata
+without checking out PR code.
 
 Offline generated Python CI requires a prior successful online build and installed acceptance for the same source. It validates artifact hashes and installed-image identity, reuses those artifacts, and reruns source and installed tests with network disabled. `coverage/installed/source.json` binds that cached image to the source; missing or changed inputs are blocked.

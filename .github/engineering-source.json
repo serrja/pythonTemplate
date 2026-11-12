@@ -30,7 +30,7 @@
     },
     ".github/workflows/contribution.yml": {
       "source": "template/.github/workflows/contribution.yml",
-      "sha256": "5ffc172c7c0881ae18e7243ee718dcc2693922f4864cafd73ab895054e30d272"
+      "sha256": "9a92d2885189a911ebb2dafc1ee37fd8955490fffb8d080eb89ae41bf863f0fd"
     },
     "docker/source_identity.sh": {
       "source": "template/docker/source_identity.sh",
@@ -39,7 +39,7 @@
     },
     "docker/release.py": {
       "source": "template/docker/release.py",
-      "sha256": "345b82b5036b8ac162778ba69af20cf1d45e2ccc28038a168f2b6882de9587a3",
+      "sha256": "ef33daf8b9b2ddeb32125b8128932417fedaf85f390ff5124c48bb5b923b2c0d",
       "revision": null
     }
   },
