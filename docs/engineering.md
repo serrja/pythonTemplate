@@ -1,6 +1,6 @@
 # Engineering and tooling policy
 
-General engineering norms come from [baseRules at the selected commit](https://github.com/serrja/baseRules/blob/730418d3cc480b4f05b88b4c8275296c4845a75a/docs/engineering.md). This Python base owns the Python tooling mechanisms below. Specializations own their
+General engineering norms come from [baseRules at the selected commit](https://github.com/serrja/baseRules/blob/8434509933feaa71ba312f8d02caad7362766d5a/docs/engineering.md). This Python base owns the Python tooling mechanisms below. Specializations own their
 boundary mechanisms; generated applications depend on installed packages, not
 template checkouts. Before writing glue, inspect existing tool features, then
 the official API, then a maintained library. Add only the missing concrete step.
