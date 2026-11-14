@@ -1,17 +1,6 @@
 # Engineering and tooling policy
 
-Daily work uses `dev`: `make lint`, reviewed diff/staged paths, then an explicitly authorized
-`git push origin dev`. `make check` is lint-only; `make acceptance` and `make ci-local` retain
-manual tests/type/build acceptance. Main stays default; test is updated only by separate
-promotion. Local is an environment, not a branch. New development tags are unstable and
-annotated `development snapshot; lint-only; tests not run`. A workflow defined only in dev
-is pending default-branch activation; a dev push does not enable its manual Actions button.
-
-Template updates in this change are source-assembled and lint-only; render/update acceptance
-remains pending an explicit manual run. No generation hook installs, tests, commits or publishes.
-
-
-General engineering norms come from [baseRules at the selected commit](https://github.com/serrja/baseRules/blob/bafcb63ed94b9769a0ca098e5db4b33c55dbc1b9/docs/engineering.md). This Python base owns the Python tooling mechanisms below. Specializations own their
+General engineering norms come from [baseRules at the selected commit](https://github.com/serrja/baseRules/blob/8434509933feaa71ba312f8d02caad7362766d5a/docs/engineering.md). This Python base owns the Python tooling mechanisms below. Specializations own their
 boundary mechanisms; generated applications depend on installed packages, not
 template checkouts. Before writing glue, inspect existing tool features, then
 the official API, then a maintained library. Add only the missing concrete step.
@@ -24,9 +13,9 @@ the official API, then a maintained library. Add only the missing concrete step.
 | CLI parsing | Typer app, explicit command names, Annotated Argument/Option and completion | typerTemplate; real Python CLIs | Typer 0.27.3, project lock | pytest and typer.testing.CliRunner; real executable and python -m |
 | Structured data | Pydantic v2 BaseModel, Field, aliases, TypeAdapter and model validation/dump | nearest format owner; actual API/config/manifest/receipt boundaries | compatible 2.x in project lock | valid/invalid input, serialization, JSON Schema, no secret leakage |
 | Settings | Pydantic Settings BaseSettings and SettingsConfigDict | application / specialized template | compatible locked 2.x | explicit CLI > env > selected file > defaults for new CLI; preserve existing priority |
-| HTTP | FastAPI routers, Depends/Security, exception handlers and lifespan | fastapiTemplate; generic HTTP | project lock | with TestClient(app), actual OpenAPI and isolated async integration |
+| HTTP | FastAPI routers, Depends/Security, exception handlers and lifespan | fastApiTemplate; generic HTTP | project lock | with TestClient(app), actual OpenAPI and isolated async integration |
 | Pokerlost operations | FastAPI operation_id and external paths | serviceTemplate only | SDK and template immutable refs | path/verb/tag/operation identity and SDK compatibility |
-| DB migrations | Alembic ScriptDirectory and MigrationContext APIs; SQLAlchemy | fastapiTemplate capability, application schema owner | project lock; unchanged historical revisions | disposable DB upgrade, expected/current head sets, readiness |
+| DB migrations | Alembic ScriptDirectory and MigrationContext APIs; SQLAlchemy | fastApiTemplate capability, application schema owner | project lock; unchanged historical revisions | disposable DB upgrade, expected/current head sets, readiness |
 | Source generation/update | Copier plus Jinja; content-addressed composition | pythonTemplate composition tool, specialized overlays | Copier 9.17.2, composition lock, exact Git source refs | fresh render, real update, owner-file retention and conflicts |
 | Python quality | Ruff, mypy, pytest, coverage.py | Python base; domain tests stay application-owned | Ruff 0.16.4 and uv.lock | types/lint/tests fail; coverage below 100% warns; corrupt reports fail |
 | Workflow validation | actionlint and ShellCheck | shared action / workflow owner | pinned checksums and action commits | native actionlint, no custom YAML analyzer |
@@ -58,7 +47,7 @@ The dependency-free setupSystem bootstrap is a small installer/delegator; it doe
 not import Typer/Pydantic before dependencies exist. Its read-only plan/help path
 must not download. Historical Python-base CLI refs remain renderable; new CLI
 source belongs only to typerTemplate. Legacy service/native profiles remain pinned
-compatibility paths, with new HTTP development in fastapiTemplate. Existing
+compatibility paths, with new HTTP development in fastApiTemplate. Existing
 project-specific settings and tests survive updates. Python names follow PEP 8;
 Pokerlost external camelCase conventions do not change generic Python/HTTP names.
 
@@ -98,7 +87,9 @@ Use `tools/compose_template.py --repo <owner> --sync-engineering <consumer>` wit
 one explicit `--managed-path` per selected portable file. The native updater
 checks existing hashes before writing, refuses local edits and requires a clean
 owner commit for downstream copies. Each changed manifest entry pins its source
-revision; untouched entries keep their historical provenance. The updater does
-not copy project Makefiles or change local commands, rules, access or settings.
+revision; untouched entries keep their historical provenance. The updater changes only those reviewed paths; it does not copy project Makefiles,
+project-owned settings or policy pins. The selected
+`.github/workflows/contribution.yml` validates branch routes using event metadata
+without checking out PR code.
 
 Offline generated Python CI requires a prior successful online build and installed acceptance for the same source. It validates artifact hashes and installed-image identity, reuses those artifacts, and reruns source and installed tests with network disabled. `coverage/installed/source.json` binds that cached image to the source; missing or changed inputs are blocked.
