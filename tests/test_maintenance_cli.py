@@ -10,6 +10,26 @@ from typer.testing import CliRunner
 from tools import check_documentation, compose_template
 
 
+def test_portable_release_helper_passes_consumer_simplification_rules() -> None:
+    source = Path(__file__).resolve().parents[1] / "template/docker/release.py"
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "ruff",
+            "check",
+            "--select",
+            "SIM105,SIM117",
+            str(source),
+        ],
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
 @pytest.mark.parametrize("width", [88, 99, 100])
 def test_portable_reporter_has_one_native_format_across_consumers(width: int) -> None:
     source = Path(__file__).resolve().parents[1] / "template/docker/coverage_report.py"

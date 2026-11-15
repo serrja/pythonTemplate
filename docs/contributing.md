@@ -6,7 +6,7 @@ Read the [naming policy](naming.md), [versioning policy](versioning.md), and [re
 
 ## 🔀 Branch and review
 
-Start a short branch from the repository's actual default branch: `feat/addHealthCheck`, `fix/preserveSettings`, `docs/releaseGuide`, or another `type/shortCamelCaseIntent`. Existing default branches are not renamed for style. Keep behavior, rename, dependency updates, and cleanup in separate reviews when their risk differs.
+Start a single lowerCamelCase working branch from fresh `origin/test`, for example `refactorG01TemplateQuality` or `fixPreserveSettings`. Open its PR into `test`, then promote `test` into `dev` and `dev` into `main` with ancestry-preserving merges. Permanent branches must survive promotion. Keep behavior, rename, dependency updates, and cleanup in separate reviews when their risk differs.
 
 Use `type(scope): intent` for the PR title and focused commits. Describe why, scope, owners and boundaries, compatibility, checks with real results, privacy, version decision, and rollback. A small typo does not need an issue or ADR. A consequential boundary decision deserves a short ADR. Do not pre-check template boxes.
 
@@ -40,8 +40,10 @@ Run `make check`, then render each supported profile and run its canonical gener
 
 ## Metadata check
 
-The managed `Contribution` workflow validates new `type/shortCamelCaseIntent` branches and
-`type(scope): intent` PR titles using event metadata without checking out or executing PR code.
+The managed `Contribution` workflow validates lowerCamelCase working branches, the
+working → `test` → `dev` → `main` route and `type(scope): intent` PR titles using
+event metadata without checking out or executing PR code. Promotions require the
+source branch to belong to the same repository.
 An existing published branch with older spelling may be recorded exactly in the repository
 variable `LEGACY_PUBLISHED_BRANCH`; this does not authorize renaming it or accepting other
 new spellings. The Python base owns the workflow; consumers keep a reviewed full-SHA snapshot

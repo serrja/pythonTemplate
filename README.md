@@ -1,6 +1,6 @@
 # pythonTemplate
 
-`pythonTemplate` owns the common Python foundation: packaging, quality, tests and engineering conventions. The repository was renamed from `serrja/projectTemplates` without changing its history. Its canonical Copier source is `git@github.com:serrja/pythonTemplate.git`. New CLI applications use [typerTemplate](https://github.com/serrja/typerTemplate); new HTTP applications use [fastapiTemplate](https://github.com/serrja/fastapiTemplate). No Pokerlost SDK, credentials, or hooks are included.
+`pythonTemplate` owns the common Python foundation: packaging, quality, tests and engineering conventions. The repository was renamed from `serrja/projectTemplates` without changing its history. Its canonical Copier source is `git@github.com:serrja/pythonTemplate.git`. New CLI applications use [typerTemplate](https://github.com/serrja/typerTemplate); new HTTP applications use [fastApiTemplate](https://github.com/serrja/fastApiTemplate). No Pokerlost SDK, credentials, or hooks are included.
 
 ## 🚀 Generate
 
@@ -17,7 +17,7 @@ uv run python -c 'import noteslibrary'
 
 The recommended profile here is `library`. Historical `cli` source remains available at full commit `9a4b58e3921b39161bf12f51a98f8b317599ba9c`; its implementation is now owned only by typerTemplate. Use its [reviewed migration path](https://github.com/serrja/typerTemplate/blob/main/docs/migration.md), not an in-place forced copy or edited answers. The `service` and `native` choices reproduce older projects; do not silently regenerate an application under a different profile. The [service migration note](docs/serviceDesign.md) and [naming policy](docs/naming.md) describe the remaining boundaries.
 
-The legacy `service` profile starts without a database. Add `-d withPersistence=true` only for an existing legacy workflow; new web foundations use `fastapiTemplate`. `withTesting=false` and `withCi=false` omit those capabilities from a specialized render.
+The legacy `service` profile starts without a database. Add `-d withPersistence=true` only for an existing legacy workflow; new web foundations use `fastApiTemplate`. `withTesting=false` and `withCi=false` omit those capabilities from a specialized render.
 
 ## 🧭 Ownership
 
@@ -27,7 +27,7 @@ The shared template owns packaging, quality configuration, CI, and the initial d
 
 From a clean generated Git checkout, use `uvx --from 'copier==9.17.2' copier update --defaults --vcs-ref=<reviewed-template-ref>` and inspect Git conflicts and deletions before accepting the result. Copier writes its own source/ref in `.copier-answers.yml`; do not edit that file to simulate an update. Historical and controlled future updates use real local Git refs in disposable repositories. The source stamp derives its template version from root `pyproject.toml` and retains answers schema 1; removal of the current CLI profile requires the explicit source migration above. No release tag is created here.
 
-The [documentation guide](docs/documentation.md), [contribution guide](docs/contributing.md), [testing guide](docs/testing.md), [naming policy](docs/naming.md), [versioning policy](docs/versioning.md), and [release procedure](docs/releaseGuide.md) each own one topic. The [composition ADR](docs/adr/templateComposition.md) defines pinned derivative sources; the [verification guide](docs/verification.md) records actual checks and limits.
+The [documentation guide](docs/documentation.md), [contribution guide](docs/contributing.md), [testing guide](docs/testing.md), [naming policy](docs/naming.md), [versioning policy](docs/versioning.md), and [release procedure](docs/releaseGuide.md) each own one topic. The [composition ADR](docs/adr/templateComposition.md) defines pinned derivative sources; the [feature and update matrix](docs/producer_feature_update_matrix.md) compares their reviewed profiles and ownership boundaries. The [verification guide](docs/verification.md) records actual checks and limits.
 
 Install the locked maintenance environment with `make install`, then run `make ci-local`. `make version` reads the canonical version; the [development guide](docs/development.md) explains reports and offline inputs. Generated projects provide the same thin Make interface for their applicable commands. Testing-enabled renders have foundation tests and advisory coverage reports; an empty library's import test is not a domain suite.
 
@@ -36,9 +36,10 @@ The [engineering policy](docs/engineering.md) owns tool selection, versions, bou
 ```text
 pythonTemplate
 ├── typerTemplate → independent installed CLI
-└── fastapiTemplate → serviceTemplate → independent installed service
+└── fastApiTemplate → serviceTemplate → independent installed service
 ```
 
+This source repository is public. SSH-based Copier URLs require normal GitHub SSH authentication; linked resources retain their own access requirements.
 Generated foundation checks cover
 packaging and tooling; application behavior needs project-owned tests.
 

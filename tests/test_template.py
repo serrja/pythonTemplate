@@ -677,3 +677,116 @@ def test_generated_offline_preflight_refuses_unprepared_acceptance(
     else:
         assert "BLOCKED:" in result.stderr
         assert "project-release-hook" not in result.stdout
+
+
+def _assert_ci_event_contract(path: Path) -> None:
+    # BaseLoader keeps the YAML 1.2 event name "on" as a string.
+    import yaml
+
+    workflow = yaml.load(path.read_text(), Loader=yaml.BaseLoader)
+    events = workflow["on"]
+    for event in ["push", "pull_request"]:
+        assert events[event]["branches"] == ["test", "dev", "main"]
+        assert "paths" not in events[event]
+        assert "paths-ignore" not in events[event]
+    concurrency = workflow["concurrency"]
+    assert (
+        concurrency["cancel-in-progress"]
+        == "${{ github.event_name == 'pull_request' }}"
+    )
+    assert concurrency["group"] == (
+        "ci-${{ github.workflow }}-"
+        "${{ github.event_name == 'pull_request' && github.ref || github.run_id }}"
+    )
+
+
+def test_repository_ci_checks_every_permanent_branch() -> None:
+    _assert_ci_event_contract(ROOT / ".github/workflows/ci.yml")
+
+
+@pytest.mark.parametrize(
+    ("profile", "persistence"),
+    [("library", False), ("service", False), ("service", True), ("native", False)],
+)
+def test_rendered_ci_checks_each_push_without_canceling_it(
+    tmp_path: Path, profile: str, persistence: bool
+) -> None:
+    source, revision = _source(tmp_path)
+    output = tmp_path / "output"
+    _run(
+        *COPIER,
+        "copy",
+        "--quiet",
+        "--defaults",
+        f"--vcs-ref={revision}",
+        str(source),
+        str(output),
+        "-d",
+        "projectName=sampleProject",
+        "-d",
+        f"profile={profile}",
+        "-d",
+        f"withPersistence={str(persistence).lower()}",
+    )
+    _assert_ci_event_contract(output / ".github/workflows/ci.yml")
+
+
+def test_ci_update_preserves_owner_files_and_second_update_has_no_drift(
+    tmp_path: Path,
+) -> None:
+    source, first = _source(tmp_path)
+    workflow = source / "template/.github/workflows/ci.yml.jinja"
+    current = workflow.read_text()
+    legacy = current.replace("branches: [test, dev, main]", "branches: [main]")
+    workflow.write_text(legacy)
+    if legacy != current:
+        first = _commit(source, "legacy main-only CI")
+    output = tmp_path / "output"
+    _run(
+        *COPIER,
+        "copy",
+        "--quiet",
+        "--defaults",
+        f"--vcs-ref={first}",
+        str(source),
+        str(output),
+        "-d",
+        "projectName=sampleProject",
+        "-d",
+        "profile=library",
+    )
+    protected = {
+        "src/sampleproject/custom.py": "CUSTOM = True\n",
+        "migrations/versions/owner_revision.py": "revision = 'owner_revision'\n",
+        "PROJECT.md": "# Project\n\nOwner content.\n",
+    }
+    for name, content in protected.items():
+        target = output / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content)
+    _git(output, "init", "--quiet")
+    _git(output, "add", ".")
+    commit_args = (
+        "-c",
+        "user.name=Template Test",
+        "-c",
+        "user.email=template-test@example.invalid",
+        "commit",
+        "--quiet",
+        "-m",
+    )
+    _git(output, *commit_args, "owner project")
+    workflow.write_text(current)
+    readme = source / "template/README.md.jinja"
+    readme.write_text(readme.read_text() + "\nUpdated CI source.\n")
+    second = _commit(source, "check every permanent branch")
+    _run(*COPIER, "update", "--quiet", "--defaults", f"--vcs-ref={second}", cwd=output)
+    _assert_ci_event_contract(output / ".github/workflows/ci.yml")
+    for name, content in protected.items():
+        assert (output / name).read_text() == content
+    assert not _git(output, "ls-files", "-u")
+    assert not list(output.rglob("*.rej"))
+    _git(output, "add", ".")
+    _git(output, *commit_args, "accept CI update")
+    _run(*COPIER, "update", "--quiet", "--defaults", f"--vcs-ref={second}", cwd=output)
+    assert _git(output, "status", "--porcelain") == ""
