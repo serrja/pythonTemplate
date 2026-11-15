@@ -27,6 +27,17 @@ Fresh renders resolve their first lock; an existing application must use its com
 
 Generated coverage includes every module in the application's package, also when never imported. The path mapping supports both a source environment and an installed wheel. Report their executions separately and identify the tested source/artifact; do not let a checkout shadow the wheel.
 
+The canonical package fixture requires equal native installed and pyproject
+versions. Its legacy `TEST_INSTALLED_WHEEL=1` mode needs no new inputs. Explicit
+`TEST_EXACT_WHEEL=1` additionally requires the installed flag, wheel path and
+SHA-256, then binds the real file and PEP 610 origin. An absent optional uv archive
+hash is compatible; malformed or unsupported declared hashes fail strict mode,
+as does missing origin data. The
+[package-proof regressions](../tests/test_package_proof.py) render this fixture,
+build dev/stable Hatchling wheels, install real wheel/editable projects in fresh
+venvs, and run `python -I` outside checkout without import-path patches. Tooling
+dependencies use the current maintenance versions through native uv installation.
+
 Pytest uses `importlib` mode so a project-owned test and a foundation test may share a basename without colliding. Use fixture discovery or explicit package imports; do not rely on pytest adding test directories to `sys.path`.
 
 ## HTTP and external resources
