@@ -22,6 +22,8 @@ Run this acceptance outside the source checkout without import-path overrides.
 An allocated release uses the staged build's versioned pyproject in its isolated
 acceptance fixture; it does not rewrite the original source metadata or compare
 an application/OpenAPI version field.
+The portable `docker/python_release.py` retains its canonical Python 3.12 Ruff
+target through a per-file setting; project-owned code keeps the project's target.
 
 Ignored `coverage/` contains source SHA/dirty/content identity, commands, statuses,
 tool versions, coverage/JUnit and artifact checksums. Coverage below 100% warns;

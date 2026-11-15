@@ -8,6 +8,7 @@ import json
 import os
 import subprocess
 import sys
+import tomllib
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -16,6 +17,39 @@ import pytest
 from jinja2 import Environment, StrictUndefined
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_portable_release_helper_keeps_its_owner_format_in_python314(
+    tmp_path: Path,
+) -> None:
+    rendered = (
+        Environment(undefined=StrictUndefined, keep_trailing_newline=True)
+        .from_string((ROOT / "template/pyproject.toml.jinja").read_text())
+        .render(
+            profile="library",
+            packageName="proof_fixture",
+            projectName="ProofFixture",
+            ruffTarget="py314",
+            pythonMinimum="3.14",
+        )
+    )
+    (tmp_path / "pyproject.toml").write_text(rendered)
+    helper = tmp_path / "docker/python_release.py"
+    helper.parent.mkdir()
+    helper.write_bytes((ROOT / "template/docker/python_release.py").read_bytes())
+    result = subprocess.run(
+        [sys.executable, "-m", "ruff", "format", "--check", "--no-cache", str(helper)],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    configuration = tomllib.loads(rendered)["tool"]["ruff"]
+    assert configuration["target-version"] == "py314"
+    assert configuration["per-file-target-version"] == {
+        "docker/python_release.py": "py312"
+    }
 
 
 @dataclass(frozen=True)
